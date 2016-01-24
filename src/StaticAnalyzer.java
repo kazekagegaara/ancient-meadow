@@ -7,6 +7,7 @@ public class StaticAnalyzer {
 	public static void main(String args[]) throws Exception {
 		List<HTMLFile> htmlFiles = new ArrayList<HTMLFile>();
 		List<CSSFile> cssFiles = new ArrayList<CSSFile>();
+		List<JSFile> jsFiles = new ArrayList<JSFile>();
 		FileHelper fileHelper = new FileHelper();
 
 		fileHelper.getHTMLFiles("D:\\ASU\\Thesis\\TestingData").forEach(file -> {
@@ -15,6 +16,10 @@ public class StaticAnalyzer {
 
 		fileHelper.getCSSFiles("D:\\ASU\\Thesis\\TestingData").forEach(file -> {
 			cssFiles.add(new CSSFile(file));
+		});
+
+		fileHelper.getJSFiles("D:\\ASU\\Thesis\\TestingData").forEach(file -> {
+			jsFiles.add(new JSFile(file));
 		});
 		
 		htmlFiles.forEach(file -> {
@@ -42,6 +47,9 @@ public class StaticAnalyzer {
 				e.printStackTrace(System.out);
 			}
 		});
+
+		JSParser jsParser = new JSParser();
+		jsParser.parseJS(jsFiles.get(1).getFile());
 	}
 
 }

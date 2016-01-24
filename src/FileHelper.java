@@ -14,6 +14,10 @@ class FileHelper {
         return getFiles(directoryName,"css");
     }
 
+    public List<File> getJSFiles(String directoryName) {
+        return getFiles(directoryName,"js");
+    }
+
     private List<File> getFiles(String directoryName,String fileType) {
         File directory = new File(directoryName);
         List<File> resultList = new ArrayList<File>();
