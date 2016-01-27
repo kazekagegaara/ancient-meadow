@@ -48,8 +48,11 @@ public class StaticAnalyzer {
 			}
 		});
 
-		JSParser jsParser = new JSParser();
-		jsParser.parseJS(jsFiles.get(1).getFile());
+		jsFiles.forEach(file -> {
+			JSParser jsParser = new JSParser();
+			jsParser.parseJS(file.getFile());
+		});
+
 	}
 
 }
