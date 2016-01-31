@@ -9,14 +9,15 @@ import org.jsoup.select.Elements;
 
 class JsoupHelper {
 
-	private File file;
+	private HTMLFile src;
+	private Document doc;
 
-	public JsoupHelper(File file) {
-		this.file = file;
+	public JsoupHelper(HTMLFile file) throws IOException {
+		this.src = file;
+		doc = Jsoup.parse(file.getFile(), "UTF-8", "");
 	}
 
-	public List<String> getAllElementIds() throws IOException {
-		Document doc = Jsoup.parse(file, "UTF-8", "");
+	public void getAllElementIds() {
 		List<String> ids = new ArrayList<String>();
 
 		Element body = doc.body();		
@@ -27,12 +28,11 @@ class JsoupHelper {
     		}
 		});
 
-		System.out.println(ids.toString());
-		return ids;
+		//System.out.println(ids.toString());
+		src.setIds(ids);
 	}
 
-	public List<String> getAllElementClasses() throws IOException {
-		Document doc = Jsoup.parse(file, "UTF-8", "");
+	public void getAllElementClasses() {
 		List<String> classes = new ArrayList<String>();
 
 		Element body = doc.body();		
@@ -43,12 +43,11 @@ class JsoupHelper {
     		}
 		});
 
-		System.out.println(classes.toString());
-		return classes;		
+		//System.out.println(classes.toString());
+		src.setClasses(classes);
 	}
 
-	public List<String> getStyleSheetLinks() throws IOException {
-		Document doc = Jsoup.parse(file, "UTF-8", "");
+	public void getStyleSheetLinks() {
 		List<String> styleSheetLinks = new ArrayList<String>();
 
         Elements imports = doc.select("link[href]");
@@ -57,12 +56,11 @@ class JsoupHelper {
             styleSheetLinks.add(link.attr("href"));
         }
 
-        System.out.println(styleSheetLinks.toString());
-        return styleSheetLinks;
+        //System.out.println(styleSheetLinks.toString());
+        src.setStyleSheetLinks(styleSheetLinks);
 	}
 
-	public List<String> getMediaLinks() throws IOException {
-		Document doc = Jsoup.parse(file, "UTF-8", "");
+	public void getMediaLinks() {
 		List<String> mediaLinks = new ArrayList<String>();
 
         Elements media = doc.select("[src]");
@@ -73,12 +71,11 @@ class JsoupHelper {
             }
         }
 
-        System.out.println(mediaLinks.toString());
-        return mediaLinks;
+        //System.out.println(mediaLinks.toString());
+        src.setMediaLinks(mediaLinks);
 	}
 
-	public List<String> getScriptLinks() throws IOException {
-		Document doc = Jsoup.parse(file, "UTF-8", "");
+	public void getScriptLinks() {
 		List<String> scriptLinks = new ArrayList<String>();
 
         Elements scripts = doc.select("script[src]");
@@ -87,12 +84,11 @@ class JsoupHelper {
             scriptLinks.add(script.attr("src"));
         }
 
-        System.out.println(scriptLinks.toString());
-        return scriptLinks;
+        //System.out.println(scriptLinks.toString());
+        src.setScriptLinks(scriptLinks);
 	}
 
-	public List<String> getEventHandlers() throws IOException { // only handles onclick for now, can be extended
-		Document doc = Jsoup.parse(file, "UTF-8", "");
+	public void getEventHandlers() { // only handles onclick for now, can be extended
 		List<String> eventHandlers = new ArrayList<String>();
 
 		Element body = doc.body();
@@ -103,8 +99,8 @@ class JsoupHelper {
 			}
 		});
 
-		System.out.println(eventHandlers.toString());
-		return eventHandlers;
+		//System.out.println(eventHandlers.toString());
+		src.setEventHandlers(eventHandlers);
 	}
 
 }

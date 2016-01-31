@@ -7,6 +7,8 @@ class CSSFile {
 	private File file;
 	private List<String> ids = new ArrayList<String>();
 	private List<String> classes = new ArrayList<String>();
+	private List<String> syntaxWarnings = new ArrayList<String>();
+	private List<String> syntaxErrors = new ArrayList<String>();
 
 	public void setFile(File file) {
 		this.file = file;
@@ -30,6 +32,22 @@ class CSSFile {
 
 	public List<String> getClasses() {
 		return this.classes;
+	}
+
+	public void setSyntaxWarnings(String errorMessage) {
+		syntaxWarnings.add(errorMessage);
+	}
+
+	public List<String> getSyntaxWarnings() {
+		return this.syntaxWarnings;
+	}
+
+	public void setSyntaxErrors(String errorMessage) {
+		syntaxErrors.add(errorMessage);
+	}
+
+	public List<String> getSyntaxErrors() {
+		return this.syntaxErrors;
 	}
 
 	public CSSFile(File file){

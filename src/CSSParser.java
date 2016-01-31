@@ -20,22 +20,29 @@ import org.w3c.dom.css.CSSStyleDeclaration;
 
 class CSSParser {
 
-  public List<String> getClasses(File file) throws Exception {
-    return new ArrayList<String>(getClassesOrIds(file,"classes"));
-  }
+  private CSSFile file;
+  private CSSRuleList ruleList;
 
-  public List<String> getIds(File file) throws Exception {
-    return new ArrayList<String>(getClassesOrIds(file,"ids"));
-  }
-
-  private Set<String> getClassesOrIds(File file,String type) throws Exception {
-    InputStream stream = new FileInputStream(file);
+  public CSSParser(CSSFile file) throws Exception {
+    this.file = file;
+    InputStream stream = new FileInputStream(file.getFile());
     InputSource source = new InputSource(new InputStreamReader(stream));
     CSSOMParser parser = new CSSOMParser(new SACParserCSS3());
-    ErrorHandler errorHandler = new CSSParseErrorHandler();
+    ErrorHandler errorHandler = new CSSParseErrorHandler(file);
     parser.setErrorHandler(errorHandler);
     CSSStyleSheet stylesheet = parser.parseStyleSheet(source, null, null);
-    CSSRuleList ruleList = stylesheet.getCssRules();
+    ruleList = stylesheet.getCssRules();
+  }
+
+  public void getClasses() {
+    file.setClasses(new ArrayList<String>(getClassesOrIds("classes")));
+  }
+
+  public void getIds() {
+    file.setIds(new ArrayList<String>(getClassesOrIds("ids")));
+  }
+
+  private Set<String> getClassesOrIds(String type) {
     Set<String> identifiers = new HashSet<String>();
     for (int i = 0; i < ruleList.getLength(); i++)
     {
