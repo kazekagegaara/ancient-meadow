@@ -36,6 +36,13 @@ public class StaticAnalyzer {
 
 	private static void processHTMLFiles(List<HTMLFile> htmlFiles, String directoryName) {
 
+		List<String> completeCSSClassList = new ArrayList<String>(); // all classes in CSS
+		List<String> completeReferencedCSSClassList = new ArrayList<String>(); // all classes referenced from either HTML or JS
+
+		List<String> completeIDList = new ArrayList<String>(); // all ids defined in HTML
+		List<String> completeReferencedIDList = new ArrayList<String>(); // all ids referenced in JS or CSS
+
+
 		htmlFiles.forEach(file -> {
 			List<File> filesToProcess = new ArrayList<File>();
 			List<CSSFile> cssFiles = new ArrayList<CSSFile>();
@@ -69,19 +76,62 @@ public class StaticAnalyzer {
 				jsFiles.add(new JSFile(dependentFile));
 			});
 
-			List<String> cumulativeClassList = processCSSFiles(file.getFile().toString(),cssFiles,file.getIds(),file.getClasses(),null);
-			processJSFiles(file.getFile().toString(),jsFiles,file.getIds(),null,file.getEventHandlers());
-			processJSFiles(file.getFile().toString(),jsFiles,null,cumulativeClassList,null);
-		});				
+			processCSSFiles(file.getFile().toString(),cssFiles,file.getIds(),file.getClasses(),null);
+			processJSFiles(file.getFile().toString(),jsFiles,file.getIds(),null,file.getEventHandlers());			
+
+			List<String> cumulativeCSSClassList = new ArrayList<String>();
+			List<String> cumulativeJSClassList = new ArrayList<String>();
+			List<String> cumulativeCSSIDList = new ArrayList<String>();
+			List<String> cumulativeJSIDList = new ArrayList<String>();
+
+			cssFiles.forEach(cssFile -> {
+				cumulativeCSSClassList.addAll(cssFile.getClasses());
+				cumulativeCSSIDList.addAll(cssFile.getIds());
+			});
+
+			jsFiles.forEach(jsFile -> {
+				cumulativeJSClassList.addAll(jsFile.getClasses());
+				cumulativeJSIDList.addAll(jsFile.getIds());
+			});
+
+			completeReferencedCSSClassList.addAll(file.getClasses());
+			completeReferencedCSSClassList.addAll(cumulativeJSClassList);			
+			completeCSSClassList.addAll(cumulativeCSSClassList);
+			processJSFiles(file.getFile().toString(),jsFiles,null,cumulativeCSSClassList,null);
+
+			completeIDList.addAll(file.getIds());
+			completeReferencedIDList.addAll(cumulativeCSSIDList);
+			completeReferencedIDList.addAll(cumulativeJSIDList);
+
+			// fileHelper.getJSFiles(filesToProcess).forEach(dependentFile -> {
+			// 	jsFiles.add(new JSFile(dependentFile));
+			// });
+
+		});		
+		
+		List<String> unusedCSS = new ArrayList<String>();
+		unusedCSS.addAll(completeCSSClassList);
+		unusedCSS.removeAll(completeReferencedCSSClassList);
+
+		List<String> unusedID = new ArrayList<String>();
+		unusedID.addAll(completeIDList);
+		unusedID.removeAll(completeReferencedIDList);
+		
+		if(unusedCSS.size() > 0) {
+			results.setWarnings("UnusedCSSWarning ::: " + unusedCSS.size() + " unused rules!");
+		}
+
+		if(unusedID.size() > 0) {
+			results.setWarnings("UnusedIDWarning ::: " + unusedID.size() + " unused IDs!");
+		}
 
 	}
 
-	private static List<String> processCSSFiles(String src,List<CSSFile> cssFiles,List<String> idList,List<String> classList,List<String> functonList) {
+	private static void processCSSFiles(String src,List<CSSFile> cssFiles,List<String> idList,List<String> classList,List<String> functonList) {
 		List<String> originalClassList = classList;
 		List<String> originalIdList = idList;
 		List<String> nonExistentIdRef = new ArrayList<String>();
 		List<String> nonExistentIdRefSrc = new ArrayList<String>();
-		List<String> cumulativeClassList = new ArrayList<String>();
 		FileHelper fileHelper = new FileHelper();
 
 		cssFiles.forEach(file -> {
@@ -111,7 +161,6 @@ public class StaticAnalyzer {
 					}
 				}
 			}
-			cumulativeClassList.addAll(retrievedClassList);
 
 			List<String> retrievedIdList = file.getIds();
 			if(retrievedIdList.size() > 0) {
@@ -141,8 +190,6 @@ public class StaticAnalyzer {
 				results.setErrors("ReferenceError ::: " + "ID not found - " + nonExistentIdRef.get(i) + " at line number " + fileHelper.getLocationInFile(nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i)) + " in file " + nonExistentIdRefSrc.get(i));
 			}	
 		}
-
-		return cumulativeClassList;
 	}
 
 	private static void processJSFiles(String src,List<JSFile> jsFiles,List<String> idList,List<String> classList,List<String> functonList) {
@@ -185,7 +232,7 @@ public class StaticAnalyzer {
 				try {
 					JSParser jsParser = new JSParser(file);
 					jsParser.parseJS();	
-				} catch(Exception e) {				
+				} catch(Exception e) {
 					results.setErrors("JSParseError ::: " + e.getMessage().toString());
 				}
 			}			
