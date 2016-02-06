@@ -1,9 +1,13 @@
+/**
+ * @author Manit Singh Kalsi
+ */
+package edu.asu.staticanalyzer.beans;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-class JSFile {
-
+public class JSFile {
 	private File file;
 	private List<String> ids = new ArrayList<String>();
 	private List<Integer> idLocation = new ArrayList<Integer>();

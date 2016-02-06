@@ -1,7 +1,12 @@
+/**
+ * @author Manit Singh Kalsi
+ */
+package edu.asu.staticanalyzer;
+
 import java.util.ArrayList;
 import java.util.List;
 
-class Results {
+public class Results {
 
 	private List<String> warnings = new ArrayList<String>();
 	private List<String> errors = new ArrayList<String>();

@@ -1,40 +1,41 @@
-import com.google.gson.Gson;
+/**
+ * @author Manit Singh Kalsi
+ */
+package edu.asu.staticanalyzer.parsers;
+
+import edu.asu.staticanalyzer.beans.JSFile;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import jdk.nashorn.api.scripting.*;
 import jdk.nashorn.internal.runtime.Context;
 import jdk.nashorn.internal.runtime.options.Options;
 import jdk.nashorn.internal.runtime.ErrorManager;
 
-class JSParser {
-
+public class JSParser {
 	private String code;
 	private JSFile file;
 
 	public JSParser(JSFile file) throws Exception {
 		this.file = file;
 		BufferedReader reader = new BufferedReader(new FileReader(file.getFile()));
-    	String line = null;
-    	StringBuilder stringBuilder = new StringBuilder();
-    	String ls = System.getProperty("line.separator");
-    	try {
-        	while((line = reader.readLine()) != null) {
-            	stringBuilder.append(line);
-            	stringBuilder.append(ls);
-        	}
-        	code = stringBuilder.toString();
-    	} finally {
-        	reader.close();
-    	}
+		String line = null;
+		StringBuilder stringBuilder = new StringBuilder();
+		String ls = System.getProperty("line.separator");
+		try {
+			while((line = reader.readLine()) != null) {
+				stringBuilder.append(line);
+				stringBuilder.append(ls);
+			}
+			code = stringBuilder.toString();
+		} finally {
+			reader.close();
+		}
 	}
 
 	public void parseJS() {
@@ -63,7 +64,7 @@ class JSParser {
 							if(statementType.getAsString().equals("ExpressionStatement")) {
 								JsonObject statementExpression = statement.getAsJsonObject().getAsJsonObject("expression");
 								if(statementExpression.getAsJsonPrimitive("type").getAsString().equals("CallExpression") &&
-									statementExpression.getAsJsonObject("callee").getAsJsonObject("object").getAsJsonPrimitive("name").getAsString().equals("document")) {
+										statementExpression.getAsJsonObject("callee").getAsJsonObject("object").getAsJsonPrimitive("name").getAsString().equals("document")) {
 									String property = statementExpression.getAsJsonObject("callee").getAsJsonPrimitive("property").getAsString();
 									if(property.equals("getElementById")) {										
 										file.setIds(statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
@@ -76,7 +77,7 @@ class JSParser {
 							} else if(statementType.getAsString().equals("VariableDeclaration")) {
 								JsonObject declarationStatement = statement.getAsJsonObject().getAsJsonArray("declarations").get(0).getAsJsonObject();
 								if(declarationStatement.getAsJsonObject("init").getAsJsonPrimitive("type").getAsString().equals("CallExpression") &&
-									declarationStatement.getAsJsonObject("init").getAsJsonObject("callee").getAsJsonObject("object").getAsJsonPrimitive("name").getAsString().equals("document")) {
+										declarationStatement.getAsJsonObject("init").getAsJsonObject("callee").getAsJsonObject("object").getAsJsonPrimitive("name").getAsString().equals("document")) {
 									String property = declarationStatement.getAsJsonObject("init").getAsJsonObject("callee").getAsJsonPrimitive("property").getAsString();
 									if(property.equals("getElementById")) {
 										file.setIds(declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
@@ -91,7 +92,7 @@ class JSParser {
 					} else if(types.getAsJsonObject().get("type").getAsString().equals("VariableDeclaration")) {
 						JsonObject declarationStatement = types.getAsJsonObject().getAsJsonArray("declarations").get(0).getAsJsonObject();
 						if(declarationStatement.getAsJsonObject("init").getAsJsonPrimitive("type").getAsString().equals("CallExpression") &&
-							declarationStatement.getAsJsonObject("init").getAsJsonObject("callee").getAsJsonObject("object").getAsJsonPrimitive("name").getAsString().equals("document")) {
+								declarationStatement.getAsJsonObject("init").getAsJsonObject("callee").getAsJsonObject("object").getAsJsonPrimitive("name").getAsString().equals("document")) {
 							String property = declarationStatement.getAsJsonObject("init").getAsJsonObject("callee").getAsJsonPrimitive("property").getAsString();
 							if(property.equals("getElementById")) {								
 								file.setIds(declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
@@ -104,7 +105,7 @@ class JSParser {
 					} else if(types.getAsJsonObject().get("type").getAsString().equals("ExpressionStatement")) {
 						JsonObject statementExpression = types.getAsJsonObject().getAsJsonObject("expression");
 						if(statementExpression.getAsJsonPrimitive("type").getAsString().equals("CallExpression") &&
-							statementExpression.getAsJsonObject("callee").getAsJsonObject("object").getAsJsonPrimitive("name").getAsString().equals("document")) {
+								statementExpression.getAsJsonObject("callee").getAsJsonObject("object").getAsJsonPrimitive("name").getAsString().equals("document")) {
 							String property = statementExpression.getAsJsonObject("callee").getAsJsonPrimitive("property").getAsString();
 							if(property.equals("getElementById")) {
 								file.setIds(statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));

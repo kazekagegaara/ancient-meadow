@@ -1,3 +1,15 @@
+/**
+ * @author Manit Singh Kalsi
+ */
+package edu.asu.staticanalyzer;
+
+import edu.asu.staticanalyzer.beans.CSSFile;
+import edu.asu.staticanalyzer.beans.HTMLFile;
+import edu.asu.staticanalyzer.beans.JSFile;
+import edu.asu.staticanalyzer.parsers.CSSParser;
+import edu.asu.staticanalyzer.parsers.FileHelper;
+import edu.asu.staticanalyzer.parsers.JSParser;
+import edu.asu.staticanalyzer.parsers.JsoupHelper;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,7 +23,7 @@ public class StaticAnalyzer {
 
 	public static void main(String args[]) throws Exception {
 		List<HTMLFile> htmlFiles = new ArrayList<HTMLFile>();		
-		
+
 		FileHelper fileHelper = new FileHelper();
 
 		// get all html files in the provided parent directory
@@ -59,11 +71,11 @@ public class StaticAnalyzer {
 			} catch(IOException e) {
 				results.setErrors("HTMLParseError ::: " + e.getMessage().toString());
 			}
-			
+
 			// System.out.println(file.getIds());
 			// System.out.println(file.getClasses());			
 			// System.out.println(file.getEventHandlers());
-			
+
 			filesToProcess.addAll(fileHelper.getFilesToProcess(directoryName, file.getStyleSheetLinks(),results));
 			filesToProcess.addAll(fileHelper.getFilesToProcess(directoryName, file.getMediaLinks(),results));
 			filesToProcess.addAll(fileHelper.getFilesToProcess(directoryName, file.getScriptLinks(),results));
@@ -108,7 +120,7 @@ public class StaticAnalyzer {
 			// });
 
 		});		
-		
+
 		List<String> unusedCSS = new ArrayList<String>();
 		unusedCSS.addAll(completeCSSClassList);
 		unusedCSS.removeAll(completeReferencedCSSClassList);
@@ -116,7 +128,7 @@ public class StaticAnalyzer {
 		List<String> unusedID = new ArrayList<String>();
 		unusedID.addAll(completeIDList);
 		unusedID.removeAll(completeReferencedIDList);
-		
+
 		if(unusedCSS.size() > 0) {
 			results.setWarnings("UnusedCSSWarning ::: " + unusedCSS.size() + " unused rules!");
 		}
@@ -210,19 +222,19 @@ public class StaticAnalyzer {
 			functonList.forEach(functionSignature -> {
 				originalFuncList.add(functionSignature.split("\\(")[0]);
 				Pattern p = Pattern.compile(",");
-			    Matcher m = p.matcher(functionSignature);
-			    int paramcount = 0;
-			    while (m.find()) {
-			    	paramcount +=1;
-			    }
-			    if(paramcount != 0) {
-			    	paramcount++;
-			    } else {
-			    	if(!(functionSignature.indexOf("()") > -1)) {
-			    		paramcount++;
-			    	}
-			    }			    
-			    originalFuncParamList.add(paramcount);
+				Matcher m = p.matcher(functionSignature);
+				int paramcount = 0;
+				while (m.find()) {
+					paramcount +=1;
+				}
+				if(paramcount != 0) {
+					paramcount++;
+				} else {
+					if(!(functionSignature.indexOf("()") > -1)) {
+						paramcount++;
+					}
+				}			    
+				originalFuncParamList.add(paramcount);
 			});
 		}		
 
@@ -248,7 +260,7 @@ public class StaticAnalyzer {
 					}
 				}
 			}
-			
+
 			if(classList != null) {
 				List<String> retrievedClasses = file.getClasses();				
 				List<Integer> retrievedClassLocations = file.getClassesLocation();
@@ -260,7 +272,7 @@ public class StaticAnalyzer {
 					}
 				}
 			}
-			
+
 			if(functonList != null) {
 				List<String> retrievedFunctions = file.getFunctions();
 				List<Integer> retrievedFunctionsLocations = file.getFunctionLocation();
@@ -297,13 +309,13 @@ public class StaticAnalyzer {
 				}
 			}
 		}
-		
+
 		if(functionNotFoundList.size() > 0) {
 			for(int i=0;i<functionNotFoundList.size();i++) {
 				results.setErrors("ReferenceError ::: " + "Function not defined - " + functionNotFoundList.get(i) + " at line number " + functionNotFoundLocationList.get(i) + " in file " + functionNotFoundSrcFile.get(i));
 			}	
 		}
-		
+
 	}
 
 	private static void listResults() {

@@ -1,8 +1,13 @@
+/**
+ * @author Manit Singh Kalsi
+ */
+package edu.asu.staticanalyzer.beans;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-class HTMLFile {
+public class HTMLFile {
 
 	private File file;
 	private List<String> ids = new ArrayList<String>();
@@ -72,4 +77,5 @@ class HTMLFile {
 	public HTMLFile(File file){
 		this.file = file;
 	}
+
 }
