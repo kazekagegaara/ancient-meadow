@@ -1,7 +1,7 @@
 /**
  * @author Manit Singh Kalsi
  */
-package edu.asu.staticanalyzer.beans;
+package edu.asu.poly.se.staticanalyzer.beans;
 
 import java.io.File;
 import java.util.ArrayList;

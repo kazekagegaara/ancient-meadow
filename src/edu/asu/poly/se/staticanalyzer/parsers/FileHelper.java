@@ -1,9 +1,8 @@
 /**
  * @author Manit Singh Kalsi
  */
-package edu.asu.staticanalyzer.parsers;
+package edu.asu.poly.se.staticanalyzer.parsers;
 
-import edu.asu.staticanalyzer.Results;
 import java.io.File;
 import java.io.FileReader;
 import java.io.LineNumberReader;
@@ -12,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import edu.asu.poly.se.staticanalyzer.Results;
 
 public class FileHelper {
 

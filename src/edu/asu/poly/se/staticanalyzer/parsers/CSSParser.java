@@ -1,12 +1,13 @@
 /**
  * @author Manit Singh Kalsi
  */
-package edu.asu.staticanalyzer.parsers;
+package edu.asu.poly.se.staticanalyzer.parsers;
 
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 
-import edu.asu.staticanalyzer.beans.CSSFile;
+import edu.asu.poly.se.staticanalyzer.beans.CSSFile;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;

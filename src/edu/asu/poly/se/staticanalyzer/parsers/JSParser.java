@@ -1,14 +1,16 @@
 /**
  * @author Manit Singh Kalsi
  */
-package edu.asu.staticanalyzer.parsers;
+package edu.asu.poly.se.staticanalyzer.parsers;
 
-import edu.asu.staticanalyzer.beans.JSFile;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+
+import edu.asu.poly.se.staticanalyzer.beans.JSFile;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Map;

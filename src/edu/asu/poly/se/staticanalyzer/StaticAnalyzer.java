@@ -1,15 +1,16 @@
 /**
  * @author Manit Singh Kalsi
  */
-package edu.asu.staticanalyzer;
+package edu.asu.poly.se.staticanalyzer;
 
-import edu.asu.staticanalyzer.beans.CSSFile;
-import edu.asu.staticanalyzer.beans.HTMLFile;
-import edu.asu.staticanalyzer.beans.JSFile;
-import edu.asu.staticanalyzer.parsers.CSSParser;
-import edu.asu.staticanalyzer.parsers.FileHelper;
-import edu.asu.staticanalyzer.parsers.JSParser;
-import edu.asu.staticanalyzer.parsers.JsoupHelper;
+import edu.asu.poly.se.staticanalyzer.beans.CSSFile;
+import edu.asu.poly.se.staticanalyzer.beans.HTMLFile;
+import edu.asu.poly.se.staticanalyzer.beans.JSFile;
+import edu.asu.poly.se.staticanalyzer.parsers.CSSParser;
+import edu.asu.poly.se.staticanalyzer.parsers.FileHelper;
+import edu.asu.poly.se.staticanalyzer.parsers.JSParser;
+import edu.asu.poly.se.staticanalyzer.parsers.JsoupHelper;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,9 +1,8 @@
 /**
  * @author Manit Singh Kalsi
  */
-package edu.asu.staticanalyzer.parsers;
+package edu.asu.poly.se.staticanalyzer.parsers;
 
-import edu.asu.staticanalyzer.beans.HTMLFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +10,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import edu.asu.poly.se.staticanalyzer.beans.HTMLFile;
 
 public class JsoupHelper {
 
