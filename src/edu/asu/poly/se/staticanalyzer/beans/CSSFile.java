@@ -6,14 +6,14 @@ package edu.asu.poly.se.staticanalyzer.beans;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import edu.asu.poly.se.staticanalyzer.results.Error;
 
 public class CSSFile {
 
 	private File file;
 	private List<String> ids = new ArrayList<String>();
 	private List<String> classes = new ArrayList<String>();
-	private List<String> syntaxWarnings = new ArrayList<String>();
-	private List<String> syntaxErrors = new ArrayList<String>();
+	private List<Error> syntaxErrors = new ArrayList<Error>();
 
 	public void setFile(File file) {
 		this.file = file;
@@ -39,19 +39,11 @@ public class CSSFile {
 		return this.classes;
 	}
 
-	public void setSyntaxWarnings(String errorMessage) {
-		syntaxWarnings.add(errorMessage);
+	public void setSyntaxErrors(Error error) {
+		syntaxErrors.add(error);
 	}
 
-	public List<String> getSyntaxWarnings() {
-		return this.syntaxWarnings;
-	}
-
-	public void setSyntaxErrors(String errorMessage) {
-		syntaxErrors.add(errorMessage);
-	}
-
-	public List<String> getSyntaxErrors() {
+	public List<Error> getSyntaxErrors() {
 		return this.syntaxErrors;
 	}
 

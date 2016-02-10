@@ -12,7 +12,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.asu.poly.se.staticanalyzer.Results;
+import edu.asu.poly.se.staticanalyzer.results.Error;
+import edu.asu.poly.se.staticanalyzer.results.Location;
+import edu.asu.poly.se.staticanalyzer.results.Results;
+
 
 public class FileHelper {
 
@@ -36,7 +39,7 @@ public class FileHelper {
 		return getFiles(files,"js");
 	}
 
-	public List<File> getFilesToProcess(String directoryName, List<String> filenames,Results results) {
+	public List<File> getFilesToProcess(String directoryName, String srcFile, List<String> filenames,Results results) {
 		List<File> filesToProcess = new ArrayList<File>();
 		filenames.forEach(name -> {
 			if(!name.contains("http://") && !name.contains("https://")) {
@@ -46,7 +49,8 @@ public class FileHelper {
 				if(f.exists() && !f.isDirectory()) {
 					filesToProcess.add(f);
 				} else {
-					results.setErrors("FileNotFound ::: " + f.toString() + " file doesn't exist!");
+					Location loc = getLocationInFile(name,srcFile);
+					results.setError(new Error("FileNotFound",filepath,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
 				}
 			}            
 		});        
@@ -54,8 +58,9 @@ public class FileHelper {
 		return filesToProcess;
 	}
 
-	public int getLocationInFile(String str,String loc) {
-		int lineNumber = -1;
+	public Location getLocationInFile(String str,String loc) {
+		int rowNumber = -1;
+		int columnNumber = -1;
 		try {
 			FileReader fr = new FileReader(loc);
 			LineNumberReader lnr = new LineNumberReader(fr); 
@@ -64,7 +69,8 @@ public class FileHelper {
 			while((line=lnr.readLine()) != null) {
 				i = lnr.getLineNumber();
 				if(exactMatch(line,str)) {
-					lineNumber = i;
+					rowNumber = i;
+					columnNumber = line.indexOf(str) + 1;
 					break;
 				}
 			}
@@ -73,11 +79,11 @@ public class FileHelper {
 		} catch(Exception e) {            
 			// this should never happen
 		}
-		return lineNumber;
+		return new Location(rowNumber,columnNumber);
 	}
 
-	private static boolean exactMatch(String source, String subItem){
-		String pattern = "\\b"+subItem+"\\b";
+	private static boolean exactMatch(String source, String subItem) {
+		String pattern = "\\b.*"+subItem+"\\b";
 		Pattern p=Pattern.compile(pattern);
 		Matcher m=p.matcher(source);
 		return m.find();

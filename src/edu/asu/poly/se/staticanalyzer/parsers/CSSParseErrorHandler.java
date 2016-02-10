@@ -3,10 +3,9 @@
  */
 package edu.asu.poly.se.staticanalyzer.parsers;
 
-import org.w3c.css.sac.ErrorHandler;
-
 import edu.asu.poly.se.staticanalyzer.beans.CSSFile;
-
+import edu.asu.poly.se.staticanalyzer.results.Error;
+import org.w3c.css.sac.ErrorHandler;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.CSSException;
 
@@ -19,19 +18,33 @@ public class CSSParseErrorHandler implements ErrorHandler {
 	}
 
 	@Override
-	public void error(CSSParseException exception) throws CSSException {		
-		file.setSyntaxWarnings("CSS Parse Warning: " + exception.getMessage() + ", line number : " + exception.getLineNumber() + ", column number : " + exception.getColumnNumber() + ", file name : " + file.getFile().toString());
+	public void error(CSSParseException exception) throws CSSException {
+		String type = "CSSParseError";
+		String desc = exception.getMessage();
+		String fileName = file.getFile().toString();
+		int rowNumber = exception.getLineNumber();
+		int columnNumber = exception.getColumnNumber();
+		file.setSyntaxErrors(new Error(type,desc,fileName,rowNumber,columnNumber));
 	}
 
 	@Override
 	public void fatalError(CSSParseException exception) throws CSSException {
-		file.setSyntaxErrors("CSS Parse Warning: " + exception.getMessage() + ", line number : " + exception.getLineNumber() + ", column number : " + exception.getColumnNumber() + ", file name : " + file.getFile().toString());
+		String type = "CSSParseError";
+		String desc = exception.getMessage();
+		String fileName = file.getFile().toString();
+		int rowNumber = exception.getLineNumber();
+		int columnNumber = exception.getColumnNumber();
+		file.setSyntaxErrors(new Error(type,desc,fileName,rowNumber,columnNumber));
 	}
 
 	@Override
 	public void warning(CSSParseException exception) throws CSSException {
-		file.setSyntaxErrors("CSS Parse Warning: " + exception.getMessage() + ", line number : " + exception.getLineNumber() + ", column number : " + exception.getColumnNumber() + ", file name : " + file.getFile().toString());
-
+		String type = "CSSParseError";
+		String desc = exception.getMessage();
+		String fileName = file.getFile().toString();
+		int rowNumber = exception.getLineNumber();
+		int columnNumber = exception.getColumnNumber();
+		file.setSyntaxErrors(new Error(type,desc,fileName,rowNumber,columnNumber));
 	}
 
 }

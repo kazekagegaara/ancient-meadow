@@ -10,6 +10,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import edu.asu.poly.se.staticanalyzer.beans.JSFile;
+import edu.asu.poly.se.staticanalyzer.results.Location;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -50,14 +51,17 @@ public class JSParser {
 		Context contextm = new Context(options, errors, Thread.currentThread().getContextClassLoader());
 		Context.setGlobal(contextm.createGlobal());
 		String json = ScriptUtils.parse(code, file.getFile().toString(), true);
-		JsonObject o = new JsonParser().parse(json).getAsJsonObject();		
+		JsonObject o = new JsonParser().parse(json).getAsJsonObject();
 		for (Map.Entry<String,JsonElement> entry : o.entrySet()) {
 			if(entry.getKey().toString().equals("body")) {
 				JsonArray array = entry.getValue().getAsJsonArray();
 				for (JsonElement types : array) {					
 					if(types.getAsJsonObject().get("type").getAsString().equals("FunctionDeclaration")) {
 						file.setFunctions(types.getAsJsonObject().getAsJsonObject("id").get("name").getAsString());
-						file.setFunctionLocation(types.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt());
+						int rowNumber = types.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt();
+						int columnNumber = types.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("column").getAsInt();
+						Location loc = new Location(rowNumber,columnNumber);
+						file.setFunctionLocation(loc);
 						JsonArray params = types.getAsJsonObject().getAsJsonArray("params");
 						file.setFunctionParams(params.size());
 						JsonArray functionBody = types.getAsJsonObject().getAsJsonObject("body").getAsJsonArray("body");
@@ -70,10 +74,16 @@ public class JSParser {
 									String property = statementExpression.getAsJsonObject("callee").getAsJsonPrimitive("property").getAsString();
 									if(property.equals("getElementById")) {										
 										file.setIds(statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
-										file.setIdLocation(statement.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt());
+										int idRowNumber = statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt();
+										int idColumnNumber = statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("column").getAsInt();
+										Location idLoc = new Location(idRowNumber,idColumnNumber);
+										file.setIdLocation(idLoc);
 									} else if (property.equals("getElementByClass")) {
 										file.setClasses(statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
-										file.setClassesLocation(statement.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt());
+										int classRowNumber = statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt();
+										int classColumnNumber = statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("column").getAsInt();
+										Location classLoc = new Location(classRowNumber,classColumnNumber);
+										file.setClassesLocation(classLoc);
 									}
 								}
 							} else if(statementType.getAsString().equals("VariableDeclaration")) {
@@ -83,10 +93,16 @@ public class JSParser {
 									String property = declarationStatement.getAsJsonObject("init").getAsJsonObject("callee").getAsJsonPrimitive("property").getAsString();
 									if(property.equals("getElementById")) {
 										file.setIds(declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
-										file.setIdLocation(statement.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt());
+										int idRowNumber = declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt();
+										int idColumnNumber = declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("column").getAsInt();
+										Location idLoc = new Location(idRowNumber,idColumnNumber);
+										file.setIdLocation(idLoc);
 									} else if (property.equals("getElementByClass")) {
 										file.setClasses(declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
-										file.setClassesLocation(statement.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt());
+										int classRowNumber = declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt();
+										int classColumnNumber = declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("column").getAsInt();
+										Location classLoc = new Location(classRowNumber,classColumnNumber);
+										file.setClassesLocation(classLoc);
 									}
 								}
 							}
@@ -98,10 +114,16 @@ public class JSParser {
 							String property = declarationStatement.getAsJsonObject("init").getAsJsonObject("callee").getAsJsonPrimitive("property").getAsString();
 							if(property.equals("getElementById")) {								
 								file.setIds(declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
-								file.setIdLocation(types.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt());
+								int idRowNumber = declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt();
+								int idColumnNumber = declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("column").getAsInt();
+								Location idLoc = new Location(idRowNumber,idColumnNumber);
+								file.setIdLocation(idLoc);
 							} else if (property.equals("getElementByClass")) {								
 								file.setClasses(declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
-								file.setClassesLocation(types.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt());
+								int classRowNumber = declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt();
+								int classColumnNumber = declarationStatement.getAsJsonObject("init").getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("column").getAsInt();
+								Location classLoc = new Location(classRowNumber,classColumnNumber);
+								file.setClassesLocation(classLoc);
 							}
 						}
 					} else if(types.getAsJsonObject().get("type").getAsString().equals("ExpressionStatement")) {
@@ -111,10 +133,16 @@ public class JSParser {
 							String property = statementExpression.getAsJsonObject("callee").getAsJsonPrimitive("property").getAsString();
 							if(property.equals("getElementById")) {
 								file.setIds(statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
-								file.setIdLocation(types.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt());
+								int idRowNumber = statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt();
+								int idColumnNumber = statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("column").getAsInt();
+								Location idLoc = new Location(idRowNumber,idColumnNumber);
+								file.setIdLocation(idLoc);
 							} else if (property.equals("getElementByClass")) {
 								file.setClasses(statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonPrimitive("value").getAsString().substring(1));
-								file.setClassesLocation(types.getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt());
+								int classRowNumber = statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("line").getAsInt();
+								int classColumnNumber = statementExpression.getAsJsonArray("arguments").get(0).getAsJsonObject().getAsJsonObject("loc").getAsJsonObject("start").getAsJsonPrimitive("column").getAsInt();
+								Location classLoc = new Location(classRowNumber,classColumnNumber);
+								file.setClassesLocation(classLoc);
 							}
 						}
 					}

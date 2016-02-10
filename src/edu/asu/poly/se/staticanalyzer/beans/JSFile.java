@@ -7,15 +7,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.asu.poly.se.staticanalyzer.results.Location;
+
 public class JSFile {
 	private File file;
 	private List<String> ids = new ArrayList<String>();
-	private List<Integer> idLocation = new ArrayList<Integer>();
+	private List<Location> idLocation = new ArrayList<Location>();
 	private List<String> classes = new ArrayList<String>();
-	private List<Integer> classesLocation = new ArrayList<Integer>();
+	private List<Location> classesLocation = new ArrayList<Location>();
 	private List<String> functions = new ArrayList<String>();
 	private List<Integer> functionParamCount = new ArrayList<Integer>();
-	private List<Integer> functionLocation = new ArrayList<Integer>();
+	private List<Location> functionLocation = new ArrayList<Location>();
 
 
 	public void setFile(File file) {
@@ -34,11 +36,11 @@ public class JSFile {
 		return this.ids;
 	}
 
-	public void setIdLocation(int location) {
+	public void setIdLocation(Location location) {
 		idLocation.add(location);
 	}
 
-	public List<Integer> getIdLocation() {
+	public List<Location> getIdLocation() {
 		return this.idLocation;
 	}
 
@@ -50,11 +52,11 @@ public class JSFile {
 		return this.classes;
 	}
 
-	public void setClassesLocation(int location) {
+	public void setClassesLocation(Location location) {
 		classesLocation.add(location);
 	}
 
-	public List<Integer> getClassesLocation() {
+	public List<Location> getClassesLocation() {
 		return this.classesLocation;
 	}
 
@@ -74,11 +76,11 @@ public class JSFile {
 		return this.functionParamCount;
 	}
 
-	public void setFunctionLocation(int location) {
+	public void setFunctionLocation(Location location) {
 		functionLocation.add(location);
 	}
 
-	public List<Integer> getFunctionLocation() {
+	public List<Location> getFunctionLocation() {
 		return this.functionLocation;
 	}
 
