@@ -26,28 +26,39 @@ public class StaticAnalyzer {
 	private static Results results = new Results();
 
 	public static void main(String args[]) throws Exception {
-		List<HTMLFile> htmlFiles = new ArrayList<HTMLFile>();		
-
+		Output.handleArgs(args);
+		
+		List<HTMLFile> htmlFiles = new ArrayList<HTMLFile>();
 		FileHelper fileHelper = new FileHelper();
 
-		// get all html files in the provided parent directory
-		fileHelper.getHTMLFiles(args[0]).forEach(file -> {
-			htmlFiles.add(new HTMLFile(file));
-		});
+		if(Output.getSource() != null) {
+			// get all html files in the provided parent directory
+			fileHelper.getHTMLFiles(Output.getSource()).forEach(file -> {
+				htmlFiles.add(new HTMLFile(file));
+			});
 
-		processHTMLFiles(htmlFiles, args[0]);
+			processHTMLFiles(htmlFiles, Output.getSource());
 
-		// // get all css files in the provided parent directory
-		// fileHelper.getCSSFiles(args[0]).forEach(file -> {
-		// 	cssFiles.add(new CSSFile(file));
-		// });
+			// // get all css files in the provided parent directory
+			// fileHelper.getCSSFiles(args[0]).forEach(file -> {
+			// 	cssFiles.add(new CSSFile(file));
+			// });
 
-		// // get all js files in the provided parent directory
-		// fileHelper.getJSFiles(args[0]).forEach(file -> {
-		// 	jsFiles.add(new JSFile(file));
-		// });
-		listResults();
+			// // get all js files in the provided parent directory
+			// fileHelper.getJSFiles(args[0]).forEach(file -> {
+			// 	jsFiles.add(new JSFile(file));
+			// });
 
+			if(Output.getOutputFormat().equals("text")) {
+				Output.listResults(results);
+			} else if(Output.getOutputFormat().equals("json")) {
+				Output.listResultsAsJson(results);
+			} else if(Output.getOutputFormat().equals("xml")) {
+				Output.listResultsAsXML(results);
+			}
+		} else {
+			System.out.println("Please specify source. Use --help for more options.");
+		}
 	}
 
 	private static void processHTMLFiles(List<HTMLFile> htmlFiles, String directoryName) {
@@ -134,11 +145,15 @@ public class StaticAnalyzer {
 		unusedID.removeAll(completeReferencedIDList);
 
 		if(unusedCSS.size() > 0) {
-			results.setWarning(new Warning("UnusedCSSWarning","desc here","somenamehere",-1,-1));
+			for(int i=0;i<unusedCSS.size();i++) {
+				results.setWarning(new Warning("UnusedCSSWarning",unusedCSS.get(i),"source File",-1,-1));
+			}
 		}
 
 		if(unusedID.size() > 0) {
-			results.setWarning(new Warning("UnusedIDWarning","desc here","somenamehere",-1,-1));
+			for(int i=0;i<unusedID.size();i++) {
+				results.setWarning(new Warning("UnusedIDWarning",unusedID.get(i),"source File",-1,-1));
+			}
 		}
 
 	}
@@ -276,7 +291,6 @@ public class StaticAnalyzer {
 
 			if(functonList != null) {
 				List<String> retrievedFunctions = file.getFunctions();
-				List<Location> retrievedFunctionsLocations = file.getFunctionLocation();
 				List<Integer> retrievedFunctionsParams = file.getFunctionParams();
 
 				for(int i=0;i<retrievedFunctions.size();i++) {
@@ -322,25 +336,4 @@ public class StaticAnalyzer {
 
 	}
 
-	private static void listResults() {
-		System.out.println(String.format("%-40s%-90s%-90s%-5s%-5s","Type","Description","Source File","Location(row number)","Location(column number)"));
-		results.getErrors().forEach(result -> {
-			String type = result.getErrorType();
-			String desc = result.getDesc();
-			String fileName = result.getFileName();
-			int rowNumber = result.getRowNumber();
-			int columnNumber = result.getColumnNumber();
-			System.out.println(String.format("%-40s%-90s%-90s%-5d%-5d",type,desc,fileName,rowNumber,columnNumber));
-		});
-		results.getWarnings().forEach(result -> {
-			String type = result.getWarningType();
-			String desc = result.getDesc();
-			String fileName = result.getFileName();
-			int rowNumber = result.getRowNumber();
-			int columnNumber = result.getColumnNumber();
-			System.out.println(String.format("%-40s%-90s%-90s%-5d%-5d",type,desc,fileName,rowNumber,columnNumber));
-		});
-		System.out.println("Total " + results.getErrors().size() + " errors!");
-		System.out.println("Total " + results.getWarnings().size() + " warnings!");
-	}
 }

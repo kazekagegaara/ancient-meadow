@@ -49,7 +49,7 @@ public class FileHelper {
 				if(f.exists() && !f.isDirectory()) {
 					filesToProcess.add(f);
 				} else {
-					Location loc = getLocationInFile(name,srcFile);
+					Location loc = getLocationInFile(name,srcFile);					
 					results.setError(new Error("FileNotFound",filepath,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
 				}
 			}            
