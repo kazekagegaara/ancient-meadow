@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 public class StaticAnalyzer {
 
 	private static Results results = new Results();
+	private static List<String> completeCSSClassList;
+	private static List<String> completeIDList;
 
 	public static void main(String args[]) throws Exception {
 		Output.handleArgs(args);
@@ -54,6 +56,9 @@ public class StaticAnalyzer {
 			} else if(Output.getOutputFormat().equals("json")) {
 				Output.listResultsAsJson(results);
 			}
+			if(Output.getRecommendationSetting().equals("on")) {
+				Recommendations.generateRecommendations(results,completeCSSClassList,completeIDList);
+			}
 		} else {
 			System.out.println("Please specify source. Use --help for more options.");
 		}
@@ -61,10 +66,10 @@ public class StaticAnalyzer {
 
 	private static void processHTMLFiles(List<HTMLFile> htmlFiles, String directoryName) {
 
-		List<String> completeCSSClassList = new ArrayList<String>(); // all classes in CSS
+		completeCSSClassList = new ArrayList<String>(); // all classes in CSS
 		List<String> completeReferencedCSSClassList = new ArrayList<String>(); // all classes referenced from either HTML or JS
 
-		List<String> completeIDList = new ArrayList<String>(); // all ids defined in HTML
+		completeIDList = new ArrayList<String>(); // all ids defined in HTML
 		List<String> completeReferencedIDList = new ArrayList<String>(); // all ids referenced in JS or CSS
 
 
@@ -320,7 +325,7 @@ public class StaticAnalyzer {
 			} else if(classList != null) {
 				for(int i=0;i<unusedIdentifier.size();i++) {
 					Location loc = unusedIdentifierLocations.get(i);
-					results.setError(new Error("ReferenceError(NonExistentClass)","Class not found - " + unusedIdentifier.get(i),unusedIdentifierSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
+					results.setError(new Error("ReferenceError(NonExistentClass)","CSS class not found - " + unusedIdentifier.get(i),unusedIdentifierSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
 				}
 			}
 		}
@@ -333,5 +338,5 @@ public class StaticAnalyzer {
 		}
 
 	}
-
+	
 }

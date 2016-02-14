@@ -27,9 +27,9 @@ ReferenceError(NonExistentID)           ID not found - idteset                  
 ReferenceError(NonExistentID)           ID not found - demo2                                                                      D:\ASU\Thesis\TestingData\css\sample.css                                                  12   2    
 ReferenceError(NonExistentID)           ID not found - demo2                                                                      D:\ASU\Thesis\TestingData\scripts\test.js                                                 11   25   
 ReferenceError(NonExistentFunction)     Function not found - doNothing                                                            D:\ASU\Thesis\TestingData\index.html                                                      52   104  
-ReferenceError(NonExistentClass)        Class not found - stopButton                                                              D:\ASU\Thesis\TestingData\scripts\test.js                                                 4    29   
-ReferenceError(NonExistentClass)        Class not found - stopButton                                                              D:\ASU\Thesis\TestingData\scripts\test.js                                                 12   28   
-ReferenceError(NonExistentClass)        Class not found - stopButton                                                              D:\ASU\Thesis\TestingData\scripts\temptest.js                                             4    29   
+ReferenceError(NonExistentClass)        CSS class not found - stopButton                                                          D:\ASU\Thesis\TestingData\scripts\test.js                                                 4    29   
+ReferenceError(NonExistentClass)        CSS class not found - stopButton                                                          D:\ASU\Thesis\TestingData\scripts\test.js                                                 12   28   
+ReferenceError(NonExistentClass)        CSS class not found - stopButton                                                          D:\ASU\Thesis\TestingData\scripts\temptest.js                                             4    29   
 Total 31 errors!
 Total 1789 warnings!
 
