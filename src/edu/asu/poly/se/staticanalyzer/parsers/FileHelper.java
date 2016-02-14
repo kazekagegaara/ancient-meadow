@@ -6,6 +6,8 @@ package edu.asu.poly.se.staticanalyzer.parsers;
 import java.io.File;
 import java.io.FileReader;
 import java.io.LineNumberReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +54,11 @@ public class FileHelper {
 					Location loc = getLocationInFile(name,srcFile);
 					results.setError(new Error("FileNotFound",filepath,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
 				}
+			} else if(name.contains("http://") || name.contains("https://")) {
+				if(!checkRemoteFileExistence(name)) {
+					Location loc = getLocationInFile(name,srcFile);
+					results.setError(new Error("FileNotFound",name,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
+				}
 			}
 		});
 
@@ -87,6 +94,18 @@ public class FileHelper {
 		Pattern p=Pattern.compile(pattern);
 		Matcher m=p.matcher(source);
 		return m.find();
+	}
+
+	private static boolean checkRemoteFileExistence(String URLName) {
+		try {
+			HttpURLConnection.setFollowRedirects(false);
+			HttpURLConnection con = (HttpURLConnection) new URL(URLName).openConnection();
+			con.setRequestMethod("HEAD");
+			return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
+		}
+		catch (Exception e) {
+			return false;
+		}
 	}
 
 	private List<File> getFiles(String directoryName,String fileType) {
