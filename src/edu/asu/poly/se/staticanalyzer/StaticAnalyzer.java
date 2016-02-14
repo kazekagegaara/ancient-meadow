@@ -53,8 +53,6 @@ public class StaticAnalyzer {
 				Output.listResults(results);
 			} else if(Output.getOutputFormat().equals("json")) {
 				Output.listResultsAsJson(results);
-			} else if(Output.getOutputFormat().equals("xml")) {
-				Output.listResultsAsXML(results);
 			}
 		} else {
 			System.out.println("Please specify source. Use --help for more options.");
