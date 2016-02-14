@@ -49,11 +49,11 @@ public class FileHelper {
 				if(f.exists() && !f.isDirectory()) {
 					filesToProcess.add(f);
 				} else {
-					Location loc = getLocationInFile(name,srcFile);					
+					Location loc = getLocationInFile(name,srcFile);
 					results.setError(new Error("FileNotFound",filepath,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
 				}
-			}            
-		});        
+			}
+		});
 
 		return filesToProcess;
 	}
@@ -63,9 +63,9 @@ public class FileHelper {
 		int columnNumber = -1;
 		try {
 			FileReader fr = new FileReader(loc);
-			LineNumberReader lnr = new LineNumberReader(fr); 
+			LineNumberReader lnr = new LineNumberReader(fr);
 			String line;
-			int i;           
+			int i;
 			while((line=lnr.readLine()) != null) {
 				i = lnr.getLineNumber();
 				if(exactMatch(line,str)) {
@@ -76,7 +76,7 @@ public class FileHelper {
 			}
 			fr.close();
 			lnr.close();
-		} catch(Exception e) {            
+		} catch(Exception e) {
 			// this should never happen
 		}
 		return new Location(rowNumber,columnNumber);
@@ -93,9 +93,9 @@ public class FileHelper {
 		File directory = new File(directoryName);
 		List<File> resultList = new ArrayList<File>();
 
-		File[] fList = directory.listFiles();   
+		File[] fList = directory.listFiles();
 		for (File file : fList) {
-			if (file.isFile()) {                
+			if (file.isFile()) {
 				String filename = file.getName();
 				String extension = filename.substring(filename.lastIndexOf(".") + 1, filename.length());
 				if(extension.equals(fileType)) {
@@ -104,7 +104,7 @@ public class FileHelper {
 			} else if (file.isDirectory()) {
 				resultList.addAll(getFiles(file.getAbsolutePath(),fileType));
 			}
-		}        
+		}
 		return resultList;
 	}
 
@@ -112,14 +112,14 @@ public class FileHelper {
 		List<File> resultList = new ArrayList<File>();
 
 		for (File file : files) {
-			if (file.isFile()) {                
+			if (file.isFile()) {
 				String filename = file.getName();
 				String extension = filename.substring(filename.lastIndexOf(".") + 1, filename.length());
 				if(extension.equals(fileType)) {
 					resultList.add(file);
 				}
 			}
-		}        
+		}
 		return resultList;
 	}
 

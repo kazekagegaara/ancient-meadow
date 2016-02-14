@@ -21,8 +21,8 @@ public class Output {
 			boolean showErrorsCount = false;
 			int errorsCount = 0;
 			int warningsCount = 0;
-			for(int i=0;i<rules.length;i++) {				
-				if(rules[i].equals("ParseError")) {					
+			for(int i=0;i<rules.length;i++) {
+				if(rules[i].equals("ParseError")) {
 					errorsCount += listParseErrors(results);
 					showErrorsCount = true;
 				} else if(rules[i].equals("ReferenceError")) {
@@ -139,11 +139,11 @@ public class Output {
 
 	public static String handleArgs(String args[]) {
 		for(int i=0;i<args.length;i++) {
-			if(args[i].contains("=")) {				
+			if(args[i].contains("=")) {
 				String flag = args[i].split("=")[0].split("--")[1];
 				String flagValue = args[i].split("=")[1];
 				if(flag.equals("source")) {
-					source = flagValue;					
+					source = flagValue;
 				} else if(flag.equals("outputFormat")) {
 					outputFormat = flagValue;
 				} else if(flag.equals("verbosity")) {
@@ -155,7 +155,7 @@ public class Output {
 				} else {
 					System.out.println("Unknown options, please use --help to get a list of possible options");
 				}
-			} else {				
+			} else {
 				if(args[i].split("--")[1].equals("help")) {
 					System.out.println("Help Menu");
 					System.out.println(String.format("%-20s%-20s","--help","shows possible flags that can be used"));

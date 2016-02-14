@@ -27,7 +27,7 @@ public class StaticAnalyzer {
 
 	public static void main(String args[]) throws Exception {
 		Output.handleArgs(args);
-		
+
 		List<HTMLFile> htmlFiles = new ArrayList<HTMLFile>();
 		FileHelper fileHelper = new FileHelper();
 
@@ -88,7 +88,7 @@ public class StaticAnalyzer {
 			}
 
 			// System.out.println(file.getIds());
-			// System.out.println(file.getClasses());			
+			// System.out.println(file.getClasses());
 			// System.out.println(file.getEventHandlers());
 
 			filesToProcess.addAll(fileHelper.getFilesToProcess(directoryName, file.getFile().toString(),file.getStyleSheetLinks(),results));
@@ -104,7 +104,7 @@ public class StaticAnalyzer {
 			});
 
 			processCSSFiles(file.getFile().toString(),cssFiles,file.getIds(),file.getClasses(),null);
-			processJSFiles(file.getFile().toString(),jsFiles,file.getIds(),null,file.getEventHandlers());			
+			processJSFiles(file.getFile().toString(),jsFiles,file.getIds(),null,file.getEventHandlers());
 
 			List<String> cumulativeCSSClassList = new ArrayList<String>();
 			List<String> cumulativeJSClassList = new ArrayList<String>();
@@ -122,7 +122,7 @@ public class StaticAnalyzer {
 			});
 
 			completeReferencedCSSClassList.addAll(file.getClasses());
-			completeReferencedCSSClassList.addAll(cumulativeJSClassList);			
+			completeReferencedCSSClassList.addAll(cumulativeJSClassList);
 			completeCSSClassList.addAll(cumulativeCSSClassList);
 			processJSFiles(file.getFile().toString(),jsFiles,null,cumulativeCSSClassList,null);
 
@@ -134,7 +134,7 @@ public class StaticAnalyzer {
 			// 	jsFiles.add(new JSFile(dependentFile));
 			// });
 
-		});		
+		});
 
 		List<String> unusedCSS = new ArrayList<String>();
 		unusedCSS.addAll(completeCSSClassList);
@@ -199,9 +199,9 @@ public class StaticAnalyzer {
 							int indexToRemove = nonExistentIdRef.indexOf(retrievedIdList.get(i));
 							nonExistentIdRef.remove(indexToRemove);
 							nonExistentIdRefSrc.remove(indexToRemove);
-						}						
+						}
 					}
-				}	
+				}
 			}
 		});
 
@@ -216,7 +216,7 @@ public class StaticAnalyzer {
 			for(int i=0;i<nonExistentIdRef.size();i++) {
 				Location loc = fileHelper.getLocationInFile(nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i));
 				results.setError(new Error("ReferenceError(NonExistentID)","ID not found - " + nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i),loc.getRowNumber(),loc.getColumnNumber()));
-			}	
+			}
 		}
 	}
 
@@ -249,21 +249,21 @@ public class StaticAnalyzer {
 					if(!(functionSignature.indexOf("()") > -1)) {
 						paramcount++;
 					}
-				}			    
+				}
 				originalFuncParamList.add(paramcount);
 			});
-		}		
+		}
 
 		jsFiles.forEach(file -> {
 
 			if(classList == null) {
 				try {
 					JSParser jsParser = new JSParser(file);
-					jsParser.parseJS();	
+					jsParser.parseJS();
 				} catch(Exception e) {
 					results.setError(new Error("ParseError",file.getFile().toString(),file.getFile().toString(),-1,-1));
 				}
-			}			
+			}
 
 			if(idList != null) {
 				List<String> retrievedIds = file.getIds();
@@ -278,7 +278,7 @@ public class StaticAnalyzer {
 			}
 
 			if(classList != null) {
-				List<String> retrievedClasses = file.getClasses();				
+				List<String> retrievedClasses = file.getClasses();
 				List<Location> retrievedClassLocations = file.getClassesLocation();
 				for(int i=0;i<retrievedClasses.size();i++) {
 					if(!classList.contains(retrievedClasses.get(i))) {
@@ -294,7 +294,7 @@ public class StaticAnalyzer {
 				List<Integer> retrievedFunctionsParams = file.getFunctionParams();
 
 				for(int i=0;i<retrievedFunctions.size();i++) {
-					if(originalFuncList.contains(retrievedFunctions.get(i))) {						
+					if(originalFuncList.contains(retrievedFunctions.get(i))) {
 						int index = originalFuncList.indexOf(retrievedFunctions.get(i));
 						if(originalFuncParamList.get(index) == retrievedFunctionsParams.get(i)) {
 							originalFuncList.remove(index);
@@ -303,7 +303,7 @@ public class StaticAnalyzer {
 					}
 				}
 			}
-		});			
+		});
 
 		if(originalFuncList.size() > 0) {
 			for(int i=0;i<originalFuncList.size();i++) {
@@ -318,7 +318,7 @@ public class StaticAnalyzer {
 				for(int i=0;i<unusedIdentifier.size();i++) {
 					Location loc = unusedIdentifierLocations.get(i);
 					results.setError(new Error("ReferenceError(NonExistentID)","ID not found - " + unusedIdentifier.get(i),unusedIdentifierSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
-				}		
+				}
 			} else if(classList != null) {
 				for(int i=0;i<unusedIdentifier.size();i++) {
 					Location loc = unusedIdentifierLocations.get(i);
@@ -331,7 +331,7 @@ public class StaticAnalyzer {
 			for(int i=0;i<functionNotFoundList.size();i++) {
 				Location loc = functionNotFoundLocationList.get(i);
 				results.setError(new Error("ReferenceError(NonExistentFunction)","Function not found - " + functionNotFoundList.get(i),functionNotFoundSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
-			}	
+			}
 		}
 
 	}
