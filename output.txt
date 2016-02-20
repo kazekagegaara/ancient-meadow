@@ -20,7 +20,6 @@ CSSParseError                           Error in expression; ':' found after ide
 CSSParseError                           Error in expression; ':' found after identifier "progid".                                 D:\ASU\Thesis\TestingData\..\TestingData\font-awesome\css\font-awesome.min.css            4    1951 
 CSSParseError                           Error in expression; ':' found after identifier "progid".                                 D:\ASU\Thesis\TestingData\..\TestingData\font-awesome\css\font-awesome.min.css            4    2122 
 CSSParseError                           Error in expression; ':' found after identifier "progid".                                 D:\ASU\Thesis\TestingData\..\TestingData\font-awesome\css\font-awesome.min.css            4    2295 
-ReferenceError(NonExistentClass)        CSS class not found - fooblah                                                             D:\ASU\Thesis\TestingData\index.html                                                      46   35   
 ReferenceError(NonExistentClass)        CSS class not found - col-md-offset-2                                                     D:\ASU\Thesis\TestingData\index.html                                                      48   42   
 ReferenceError(NonExistentClass)        CSS class not found - fa                                                                  D:\ASU\Thesis\TestingData\index.html                                                      52   137  
 ReferenceError(NonExistentID)           ID not found - idteset                                                                    D:\ASU\Thesis\TestingData\css\sample.css                                                  9    2    
@@ -30,6 +29,6 @@ ReferenceError(NonExistentFunction)     Function not found - doNothing          
 ReferenceError(NonExistentClass)        CSS class not found - stopButton                                                          D:\ASU\Thesis\TestingData\scripts\test.js                                                 4    29   
 ReferenceError(NonExistentClass)        CSS class not found - stopButton                                                          D:\ASU\Thesis\TestingData\scripts\test.js                                                 12   28   
 ReferenceError(NonExistentClass)        CSS class not found - stopButton                                                          D:\ASU\Thesis\TestingData\scripts\temptest.js                                             4    29   
-Total 31 errors!
+Total 30 errors!
 Total 1789 warnings!
 

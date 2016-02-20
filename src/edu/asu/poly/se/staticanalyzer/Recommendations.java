@@ -1,7 +1,6 @@
 /**
  * @author Manit Singh Kalsi
  */
-
 package edu.asu.poly.se.staticanalyzer;
 
 import java.util.List;
