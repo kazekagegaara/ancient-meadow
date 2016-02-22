@@ -28,6 +28,10 @@ public class StaticAnalyzer {
 	private static List<String> completeIDList;
 
 	public static void main(String args[]) throws Exception {
+		runStaticAnalyzer(args,false);
+	}
+
+	public static Results runStaticAnalyzer(String args[], boolean pluginMode) {
 		Output.handleArgs(args);
 
 		List<HTMLFile> htmlFiles = new ArrayList<HTMLFile>();
@@ -50,7 +54,12 @@ public class StaticAnalyzer {
 			// fileHelper.getJSFiles(args[0]).forEach(file -> {
 			// 	jsFiles.add(new JSFile(file));
 			// });
-
+		} else {
+			System.out.println("Please specify source. Use --help for more options.");
+		}
+		if(pluginMode) {
+			return results;
+		} else {
 			if(Output.getOutputFormat().equals("text")) {
 				Output.listResults(results);
 			} else if(Output.getOutputFormat().equals("json")) {
@@ -59,8 +68,7 @@ public class StaticAnalyzer {
 			if(Output.getRecommendationSetting().equals("on")) {
 				Recommendations.generateRecommendations(results,completeCSSClassList,completeIDList);
 			}
-		} else {
-			System.out.println("Please specify source. Use --help for more options.");
+			return null;
 		}
 	}
 
@@ -338,5 +346,5 @@ public class StaticAnalyzer {
 		}
 
 	}
-	
+
 }

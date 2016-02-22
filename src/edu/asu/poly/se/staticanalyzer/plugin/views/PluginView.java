@@ -6,14 +6,37 @@ package edu.asu.poly.se.staticanalyzer.plugin.views;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
+
+import edu.asu.poly.se.staticanalyzer.StaticAnalyzer;
+import edu.asu.poly.se.staticanalyzer.results.Results;
+import edu.asu.poly.se.staticanalyzer.results.Error;
+
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+
+import java.io.File;
+
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.ui.*;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -29,30 +52,7 @@ public class PluginView extends ViewPart {
 	private Action action1;
 	private Action action2;
 	private Action doubleClickAction;
-
-	class ViewContentProvider implements IStructuredContentProvider {
-		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-		}
-		public void dispose() {
-		}
-		public Object[] getElements(Object parent) {
-			return new String[] { "One", "Two", "Three" };
-		}
-	}
-	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
-		public String getColumnText(Object obj, int index) {
-			return getText(obj);
-		}
-		public Image getColumnImage(Object obj, int index) {
-			return getImage(obj);
-		}
-		public Image getImage(Object obj) {
-			return PlatformUI.getWorkbench().
-					getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
-		}
-	}
-	class NameSorter extends ViewerSorter {
-	}
+	private Results results = new Results();	
 
 	public PluginView() {
 	}
@@ -67,14 +67,31 @@ public class PluginView extends ViewPart {
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				System.out.println("clicked");
-				getCurrentFilePath();
+				String path = getCurrentFilePath();				
+				if(!path.equals("")){
+					path = new File(path).getParent().toString();
+					String[] args = new String[1];
+					args[0] = "--source="+path;
+					results = StaticAnalyzer.runStaticAnalyzer(args, true);
+					updateViewer();
+				}
 			}
 		});
 		button.setLayoutData(new GridData());
 		createViewer(parent);
 	}
-	
+
+	private void updateViewer() {		
+		viewer.getTable().removeAll();
+		if ((results != null) && (results.getErrors().size() <= 0)) {
+			results.setError(new Error("No error found","There was no error found","",0,0));
+			viewer.setInput(results.getErrors());
+		} else {
+			viewer.setInput(results.getErrors());
+		}	
+	}		
+
+
 	private void createViewer(Composite parent) {
 		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 		createColumns(parent, viewer);
@@ -83,8 +100,9 @@ public class PluginView extends ViewPart {
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 
-		viewer.setContentProvider(new ViewContentProvider());
-		viewer.setInput(getViewSite());
+		viewer.setContentProvider(new ArrayContentProvider());
+		results.setError(new Error("Not Initialized","Please open a HTML file in a project and click on run","",0,0));
+		viewer.setInput(results.getErrors());
 		getSite().setSelectionProvider(viewer);
 
 		makeActions();
@@ -104,49 +122,65 @@ public class PluginView extends ViewPart {
 
 	private String getCurrentFilePath() {
 		String path = "";
-		IWorkbenchPart workbenchPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart(); 
+		IWorkbenchPart workbenchPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
 		IFile file = (IFile)workbenchPart.getSite().getPage().getActiveEditor().getEditorInput().getAdapter(IFile.class);
 		if(file != null) {
-			System.out.println(file.getRawLocation());
+			path = file.getRawLocation().toOSString();
 		}
 		return path;
 	}
 
 	private void createColumns(final Composite parent, final TableViewer viewer) {
 
-		String[] titles = { "Task Name", "Assigned To", "Status" };
-		int[] bounds = { 150, 150, 150 };
+		String[] titles = { "Error Type", "Description", "Source File Name", "Location(row number)", "Location(column number)" };
+		int[] bounds = { 250, 800, 400, 200, 200};
 
-		// first column is for the Task Name
+		// first column
 		TableViewerColumn col = createTableViewerColumn(titles[0], bounds[0], 0);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
-			public String getText(Object element) {
-				System.out.println(element.toString());
-				return "column one text";
+			public String getText(Object element) {				
+				return ((Error)element).getErrorType();
 			}
 		});
 
-		// second column is for the Task Description
+		// second column
 		col = createTableViewerColumn(titles[1], bounds[1], 1);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				return "column two text";
+				return ((Error)element).getDesc();
 			}
 		});
 
-		// Third column is for the Task status
+		// Third column
 		col = createTableViewerColumn(titles[2], bounds[2], 2);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
-			public String getText(Object element) {
-				return "column three text";
+			public String getText(Object element) {				
+				return ((Error)element).getFileName();
 			}
 		});
 
+		// Fourth column
+		col = createTableViewerColumn(titles[3], bounds[3], 3);
+		col.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {				
+				return String.valueOf(((Error)element).getRowNumber());
+			}
+		});
+
+		// Fifth column
+		col = createTableViewerColumn(titles[4], bounds[4], 4);
+		col.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				return String.valueOf(((Error)element).getColumnNumber());
+			}
+		});
 	}
-	
+
 	private TableViewerColumn createTableViewerColumn(String title, int bound, final int colNumber) {
 		final TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
 		final TableColumn column = viewerColumn.getColumn();
@@ -218,7 +252,7 @@ public class PluginView extends ViewPart {
 			public void run() {
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				showMessage("Double-click detected on "+obj.toString());
+				goToLine(obj);
 			}
 		};
 	}
@@ -235,6 +269,37 @@ public class PluginView extends ViewPart {
 				viewer.getControl().getShell(),
 				"Static Analyzer",
 				message);
+	}
+	
+	private void goToLine(Object obj) {
+		Error err = (Error)obj;
+		int lineNumber = err.getRowNumber();
+		String fileName = err.getFileName();
+
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot workspaceRoot = workspace.getRoot();
+		IPath path = new Path(fileName);
+		IFile file = workspaceRoot.getFileForLocation(path);
+//		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+//		IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(path.toOSString());
+//		IEditorInput editor = new FileEditorInput(file);
+//		try {
+//			page.openEditor(editor, desc.getId());
+//		} catch (PartInitException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+		try {
+			ITextEditor textEditor = (ITextEditor)IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), file, true );
+			IDocumentProvider provider = textEditor.getDocumentProvider();
+			IDocument document = provider.getDocument(textEditor.getEditorInput());
+			IRegion loc = document.getLineInformation(lineNumber - 1);
+			textEditor.selectAndReveal(loc.getOffset(), loc.getLength());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**

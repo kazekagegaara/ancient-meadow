@@ -293,7 +293,7 @@ public class Output {
 		return warnings;
 	}
 
-	public static String handleArgs(String args[]) {
+	public static void handleArgs(String args[]) {
 		for(int i=0;i<args.length;i++) {
 			if(args[i].contains("=")) {
 				String flag = args[i].split("=")[0].split("--")[1];
@@ -326,7 +326,6 @@ public class Output {
 				}
 			}
 		}
-		return null;
 	}
 
 	public static String getSource() {
