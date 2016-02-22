@@ -5,7 +5,7 @@ Execute the jar in the build folder. Accepted flag values are -
 
 --help            : shows possible flags that can be used
 
---source          : pass the path of the root directory of the code to be analyzed with this flag, e.g., --sourceFile=/User/home/testingdata/
+--source          : pass the path of the root directory of the code to be analyzed with this flag, e.g., --source=/User/home/testingdata/
 
 --outputFormat    : supported formats are json or text, default value is text
 
