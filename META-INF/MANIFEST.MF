@@ -12,3 +12,12 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.text;bundle-version="3.5.400"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .,
+ bin/,
+ src/,
+ lib/commons-lang3-3.4.jar,
+ lib/cssparser-0.9.18.jar,
+ lib/gson-2.5.jar,
+ lib/jsoup-1.8.3.jar,
+ lib/nashorn.jar,
+ lib/sac.jar 

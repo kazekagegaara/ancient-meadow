@@ -56,7 +56,7 @@ public class FileHelper {
 				}
 			} else if(name.contains("http://") || name.contains("https://")) {
 				if(!checkRemoteFileExistence(name)) {
-					Location loc = getLocationInFile(name,srcFile);
+					Location loc = getLocationInFile(Pattern.quote(name),srcFile);
 					results.setError(new Error("FileNotFound",name,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
 				}
 			}

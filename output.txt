@@ -1,6 +1,8 @@
 Type                                    Description                                                                               Source File                                                                               Location(row number)Location(column number)
 FileNotFound                            D:\ASU\Thesis\TestingData\..\test\font-awesome\css\font-awesome.min.css                   D:\ASU\Thesis\TestingData\index.html                                                      24   17   
-FileNotFound                            http://fonts.googleapis.com/css?family=Montsert:400,70                                    D:\ASU\Thesis\TestingData\index.html                                                      -1   -1   
+FileNotFound                            http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic                   D:\ASU\Thesis\TestingData\index.html                                                      25   0    
+FileNotFound                            http://fonts.googleapis.com/css?family=Montserrat:400,700                                 D:\ASU\Thesis\TestingData\index.html                                                      26   0    
+FileNotFound                            http://fonts.googleapis.com/css?family=Montsert:400,70                                    D:\ASU\Thesis\TestingData\index.html                                                      27   0    
 FileNotFound                            D:\ASU\Thesis\TestingData\img\smiley.gif                                                  D:\ASU\Thesis\TestingData\index.html                                                      60   23   
 FileNotFound                            D:\ASU\Thesis\TestingData\myscripts.js                                                    D:\ASU\Thesis\TestingData\index.html                                                      36   18   
 CSSParseError                           Error in expression; ':' found after identifier "progid".                                 D:\ASU\Thesis\TestingData\css\bootstrap.min.css                                           5    56358
@@ -29,6 +31,6 @@ ReferenceError(NonExistentFunction)     Function not found - doNothing          
 ReferenceError(NonExistentClass)        CSS class not found - stopButton                                                          D:\ASU\Thesis\TestingData\scripts\test.js                                                 4    29   
 ReferenceError(NonExistentClass)        CSS class not found - stopButton                                                          D:\ASU\Thesis\TestingData\scripts\test.js                                                 12   28   
 ReferenceError(NonExistentClass)        CSS class not found - stopButton                                                          D:\ASU\Thesis\TestingData\scripts\temptest.js                                             4    29   
-Total 30 errors!
+Total 32 errors!
 Total 1789 warnings!
 

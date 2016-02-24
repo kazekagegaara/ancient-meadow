@@ -14,29 +14,23 @@ import edu.asu.poly.se.staticanalyzer.results.Results;
 import edu.asu.poly.se.staticanalyzer.results.Error;
 
 import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 
 import java.io.File;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.internal.Workbench;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -72,6 +66,7 @@ public class PluginView extends ViewPart {
 					path = new File(path).getParent().toString();
 					String[] args = new String[1];
 					args[0] = "--source="+path;
+					showMessage(args[0]);
 					results = StaticAnalyzer.runStaticAnalyzer(args, true);
 					updateViewer();
 				}
@@ -88,6 +83,7 @@ public class PluginView extends ViewPart {
 			viewer.setInput(results.getErrors());
 		} else {
 			viewer.setInput(results.getErrors());
+			showMessage(String.valueOf(results.getErrors().size()));
 		}	
 	}		
 
@@ -280,15 +276,6 @@ public class PluginView extends ViewPart {
 		IWorkspaceRoot workspaceRoot = workspace.getRoot();
 		IPath path = new Path(fileName);
 		IFile file = workspaceRoot.getFileForLocation(path);
-//		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-//		IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(path.toOSString());
-//		IEditorInput editor = new FileEditorInput(file);
-//		try {
-//			page.openEditor(editor, desc.getId());
-//		} catch (PartInitException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 		
 		try {
 			ITextEditor textEditor = (ITextEditor)IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), file, true );
@@ -297,7 +284,6 @@ public class PluginView extends ViewPart {
 			IRegion loc = document.getLineInformation(lineNumber - 1);
 			textEditor.selectAndReveal(loc.getOffset(), loc.getLength());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
