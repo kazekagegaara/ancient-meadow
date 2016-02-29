@@ -57,7 +57,10 @@ public class StaticAnalyzer {
 		} else {
 			System.out.println("Please specify source. Use --help for more options.");
 		}
-		if(pluginMode) {
+		if(pluginMode) {			
+			if(Output.getRecommendationSetting().equals("yes")) {
+				Recommendations.generateRecommendations(results,completeCSSClassList,completeIDList);
+			}
 			return results;
 		} else {
 			if(Output.getOutputFormat().equals("text")) {
@@ -65,7 +68,7 @@ public class StaticAnalyzer {
 			} else if(Output.getOutputFormat().equals("json")) {
 				Output.listResultsAsJson(results);
 			}
-			if(Output.getRecommendationSetting().equals("on")) {
+			if(Output.getRecommendationSetting().equals("yes")) {
 				Recommendations.generateRecommendations(results,completeCSSClassList,completeIDList);
 			}
 			return null;

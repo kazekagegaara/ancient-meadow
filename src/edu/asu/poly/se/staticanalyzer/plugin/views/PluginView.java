@@ -5,12 +5,14 @@ package edu.asu.poly.se.staticanalyzer.plugin.views;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.part.*;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import edu.asu.poly.se.staticanalyzer.StaticAnalyzer;
 import edu.asu.poly.se.staticanalyzer.results.Results;
+import staticanalyzer.Activator;
 import edu.asu.poly.se.staticanalyzer.results.Error;
 
 import org.eclipse.jface.viewers.*;
@@ -20,6 +22,8 @@ import org.eclipse.swt.layout.GridLayout;
 import java.io.File;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -41,49 +45,117 @@ import org.eclipse.swt.events.SelectionEvent;
 public class PluginView extends ViewPart {
 
 	public static final String ID = "edu.asu.poly.se.staticanalyzer.plugin.views.PluginView";
-
-	private TableViewer viewer;
+	
+	private Composite rootParent;
+	private TableViewer viewer;	
 	private Action action1;
 	private Action action2;
 	private Action doubleClickAction;
-	private Results results = new Results();	
+	private Results results = new Results();
+	private boolean useRecommendations = false;
+	private boolean useDevMode = false;
 
 	public PluginView() {
 	}
 
 	public void createPartControl(Composite parent) {
-		GridLayout outerLayout = new GridLayout(2, false);
+		rootParent = parent;
+		GridLayout outerLayout = new GridLayout(1, true);
 		parent.setLayout(outerLayout);
 
-		Button button = new Button(parent, 8);
-		button.setText("Run");
-		button.addSelectionListener(new SelectionAdapter()
+		Button runBtn = new Button(parent, SWT.PUSH);
+		runBtn.setText("Run");
+		runBtn.addSelectionListener(new SelectionAdapter()
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
 				String path = getCurrentFilePath();				
 				if(!path.equals("")){
 					path = new File(path).getParent().toString();
-					String[] args = new String[1];
+					String[] args = new String[2];
 					args[0] = "--source="+path;
-					showMessage(args[0]);
+					args[1] = "--recommendations=yes";
+					results.getErrors().clear();
+					results.getWarnings().clear();
 					results = StaticAnalyzer.runStaticAnalyzer(args, true);
 					updateViewer();
 				}
 			}
 		});
-		button.setLayoutData(new GridData());
+		runBtn.setLayoutData(new GridData());
+
+		Button recommendationCheck = new Button(parent, SWT.CHECK);
+		recommendationCheck.setText("Use Recommendations");
+		recommendationCheck.addSelectionListener(new SelectionAdapter()
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				useRecommendations = recommendationCheck.getSelection();
+				if(useRecommendations) {
+					for(final TableColumn column : viewer.getTable().getColumns())
+					{
+						if(column.getText().equals("Fix Recommendation")) {
+							if(column.getWidth() == 0) {
+								column.setWidth(800);
+							}
+						}
+					}
+				} else {
+					for(final TableColumn column : viewer.getTable().getColumns())
+					{
+						if(column.getText().equals("Fix Recommendation")) {
+							if(column.getWidth() == 800) {
+								column.setWidth(0);
+							}
+						}
+					}
+				}
+			}
+		});
+		recommendationCheck.setLayoutData(new GridData());
+
+		Button devMode = new Button(parent, SWT.CHECK);
+		devMode.setText("Enable Dev Mode");
+		devMode.addSelectionListener(new SelectionAdapter()
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				useDevMode = devMode.getSelection();
+			}
+		});
+		
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
+			@Override
+			public void resourceChanged(IResourceChangeEvent event) {
+				if(useDevMode && event.getType() == 1) {
+					System.out.println("Something changed!");
+					String path = getCurrentFilePath();				
+					if(!path.equals("")){
+						path = new File(path).getParent().toString();
+						String[] args = new String[2];
+						args[0] = "--source="+path;
+						args[1] = "--recommendations=yes";
+						results.getErrors().clear();
+						results.getWarnings().clear();
+						results = StaticAnalyzer.runStaticAnalyzer(args, true);
+						updateViewer();
+					}
+				}
+	        }
+	    });
+		
 		createViewer(parent);
 	}
 
 	private void updateViewer() {		
 		viewer.getTable().removeAll();
 		if ((results != null) && (results.getErrors().size() <= 0)) {
-			results.setError(new Error("No error found","There was no error found","",0,0));
+			Error err = new Error("No error found","There was no error found","",0,0);
+			err.setFixRecommendation("Nothing here");
+			results.setError(err);
 			viewer.setInput(results.getErrors());
 		} else {
 			viewer.setInput(results.getErrors());
-			showMessage(String.valueOf(results.getErrors().size()));
 		}	
 	}		
 
@@ -97,7 +169,9 @@ public class PluginView extends ViewPart {
 		table.setLinesVisible(true);
 
 		viewer.setContentProvider(new ArrayContentProvider());
-		results.setError(new Error("Not Initialized","Please open a HTML file in a project and click on run","",0,0));
+		Error err = new Error("Not Initialized","Please open a HTML file in a project and click on run","",0,0);
+		err.setFixRecommendation("Please open a HTML file in a project and click on run");
+		results.setError(err);		
 		viewer.setInput(results.getErrors());
 		getSite().setSelectionProvider(viewer);
 
@@ -128,7 +202,8 @@ public class PluginView extends ViewPart {
 
 	private void createColumns(final Composite parent, final TableViewer viewer) {
 
-		String[] titles = { "Error Type", "Description", "Source File Name", "Location(row number)", "Location(column number)" };
+		String[] titles = { "Error Type", "Description", "Source File Name", "Location(row number)", "Location(column number)", "Fix Recommendation" };
+
 		int[] bounds = { 250, 800, 400, 200, 200};
 
 		// first column
@@ -175,6 +250,15 @@ public class PluginView extends ViewPart {
 				return String.valueOf(((Error)element).getColumnNumber());
 			}
 		});
+
+		// Sixth column
+		col = createTableViewerColumn(titles[5], 0, 5);
+		col.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				return String.valueOf(((Error)element).getFixRecommendation());
+			}
+		});		
 	}
 
 	private TableViewerColumn createTableViewerColumn(String title, int bound, final int colNumber) {
@@ -266,7 +350,7 @@ public class PluginView extends ViewPart {
 				"Static Analyzer",
 				message);
 	}
-	
+
 	private void goToLine(Object obj) {
 		Error err = (Error)obj;
 		int lineNumber = err.getRowNumber();
@@ -276,7 +360,7 @@ public class PluginView extends ViewPart {
 		IWorkspaceRoot workspaceRoot = workspace.getRoot();
 		IPath path = new Path(fileName);
 		IFile file = workspaceRoot.getFileForLocation(path);
-		
+
 		try {
 			ITextEditor textEditor = (ITextEditor)IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), file, true );
 			IDocumentProvider provider = textEditor.getDocumentProvider();

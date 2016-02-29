@@ -18,7 +18,7 @@ public class Output {
 	private static String source = null;
 	private static String outputFormat = "text";
 	private static String verbosityLevel = "medium";
-	private static String recommendationSetting = "off";
+	private static String recommendationSetting = "no";
 	private static String rulesList = "all";
 	private static String outputFile = "output";
 

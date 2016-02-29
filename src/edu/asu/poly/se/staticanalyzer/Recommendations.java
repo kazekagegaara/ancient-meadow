@@ -31,18 +31,20 @@ public class Recommendations {
 		for(int i=0;i<results.getErrors().size();i++) {
 			String type = results.getErrors().get(i).getErrorType();
 			String desc = results.getErrors().get(i).getDesc();
-			String fileName = results.getErrors().get(i).getFileName();
-			int rowNumber = results.getErrors().get(i).getRowNumber();
-			int columnNumber = results.getErrors().get(i).getColumnNumber();
 			if(type.contains("ReferenceError")) {
-				System.out.println("Error is " + type + " " + desc + " " + fileName + " " + rowNumber + " " + columnNumber);
 				if(desc.contains("CSS")) {
 					String fix = getNearestMatchingString(desc.split("-")[1].substring(1),completeCSSClassList);
-					System.out.println("Did you mean " + fix + " ?");
+					results.getErrors().get(i).setFixRecommendation("Did you mean " + fix + " ?");
 				} else if(desc.contains("ID")) {
 					String fix = getNearestMatchingString(desc.split("-")[1].substring(1),completeIDList);
-					System.out.println("Did you mean " + fix + " ?");
+					results.getErrors().get(i).setFixRecommendation("Did you mean " + fix + " ?");
+				} else {
+					results.getErrors().get(i).setFixRecommendation("Check method name and number of parameters");
 				}
+			} else if(type.contains("FileNotFound")) {				
+				results.getErrors().get(i).setFixRecommendation("Check if the file exists and if the path is correct");
+			} else {
+				results.getErrors().get(i).setFixRecommendation("Check for syntax errors!");
 			}
 		}
 	}
