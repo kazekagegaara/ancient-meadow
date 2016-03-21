@@ -26,6 +26,7 @@ public class StaticAnalyzer {
 	private static Results results = new Results();
 	private static List<String> completeCSSClassList;
 	private static List<String> completeIDList;
+	private static List<CSSFile> allCSSFiles = new ArrayList<CSSFile>();
 
 	public static void main(String args[]) throws Exception {
 		runStaticAnalyzer(args,false);
@@ -110,7 +111,9 @@ public class StaticAnalyzer {
 			filesToProcess.addAll(fileHelper.getFilesToProcess(directoryName, file.getFile().toString(),file.getScriptLinks(),results));
 
 			fileHelper.getCSSFiles(filesToProcess).forEach(dependentFile -> {
-				cssFiles.add(new CSSFile(dependentFile));
+				CSSFile cssFile = new CSSFile(dependentFile);
+				cssFiles.add(cssFile);
+				allCSSFiles.add(cssFile);
 			});
 
 			fileHelper.getJSFiles(filesToProcess).forEach(dependentFile -> {
@@ -159,15 +162,39 @@ public class StaticAnalyzer {
 		unusedID.removeAll(completeReferencedIDList);
 
 		if(unusedCSS.size() > 0) {
-			for(int i=0;i<unusedCSS.size();i++) {
-				results.setWarning(new Warning("UnusedCSSWarning",unusedCSS.get(i),"source File",-1,-1));
-			}
+			allCSSFiles.forEach(cssfile -> {
+				FileHelper fileHelper = new FileHelper();
+				String currentSrc = cssfile.getFile().getPath().toString();
+				try {
+					List<String> fileClasses = cssfile.getClasses();
+					for(int i=0;i<unusedCSS.size();i++) {
+						if(fileClasses.contains(unusedCSS.get(i))) {
+							Location loc = fileHelper.getLocationInFile(unusedCSS.get(i), currentSrc);
+							results.setWarning(new Warning("UnusedCSSWarning",unusedCSS.get(i),currentSrc,loc.getRowNumber(),loc.getColumnNumber()));								
+						}
+					}
+				} catch (Exception e) {					
+				}					
+			});
 		}
 
 		if(unusedID.size() > 0) {
-			for(int i=0;i<unusedID.size();i++) {
-				results.setWarning(new Warning("UnusedIDWarning",unusedID.get(i),"source File",-1,-1));
-			}
+			htmlFiles.forEach(file -> {
+				FileHelper fileHelper = new FileHelper();				
+				try {
+					JsoupHelper jsouphelper = new JsoupHelper(file);
+					jsouphelper.getAllElementIds();					
+				} catch(IOException e) {		
+				}
+				List<String> fileIds = file.getIds();
+				String currentSrc = file.getFile().getPath().toString();
+				for(int i=0;i<unusedID.size();i++) {
+					if(fileIds.contains(unusedID.get(i))) {
+						Location loc = fileHelper.getLocationInFile(unusedID.get(i), currentSrc);
+						results.setWarning(new Warning("UnusedIDWarning",unusedID.get(i),currentSrc,loc.getRowNumber(),loc.getColumnNumber()));
+					}					
+				}
+			});			
 		}
 
 	}
@@ -222,14 +249,14 @@ public class StaticAnalyzer {
 		if(originalClassList.size() > 0) {
 			for(int i=0;i<originalClassList.size();i++) {
 				Location loc = fileHelper.getLocationInFile(originalClassList.get(i),src);
-				results.setError(new Error("ReferenceError(NonExistentClass)","CSS class not found - " + originalClassList.get(i),src,loc.getRowNumber(),loc.getColumnNumber()));
+				results.setError(new Error("ReferenceError(HTMLtoCSS : NonExistentClass)","CSS class not found - " + originalClassList.get(i),src,loc.getRowNumber(),loc.getColumnNumber()));
 			}
 		}
 
 		if(nonExistentIdRef.size() > 0) {
 			for(int i=0;i<nonExistentIdRef.size();i++) {
 				Location loc = fileHelper.getLocationInFile(nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i));
-				results.setError(new Error("ReferenceError(NonExistentID)","ID not found - " + nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i),loc.getRowNumber(),loc.getColumnNumber()));
+				results.setError(new Error("ReferenceError(CSStoHTML : NonExistentID)","ID not found - " + nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i),loc.getRowNumber(),loc.getColumnNumber()));
 			}
 		}
 	}
@@ -331,12 +358,12 @@ public class StaticAnalyzer {
 			if(idList != null) {
 				for(int i=0;i<unusedIdentifier.size();i++) {
 					Location loc = unusedIdentifierLocations.get(i);
-					results.setError(new Error("ReferenceError(NonExistentID)","ID not found - " + unusedIdentifier.get(i),unusedIdentifierSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
+					results.setError(new Error("ReferenceError(JStoHTML : NonExistentID)","ID not found - " + unusedIdentifier.get(i),unusedIdentifierSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
 				}
 			} else if(classList != null) {
 				for(int i=0;i<unusedIdentifier.size();i++) {
 					Location loc = unusedIdentifierLocations.get(i);
-					results.setError(new Error("ReferenceError(NonExistentClass)","CSS class not found - " + unusedIdentifier.get(i),unusedIdentifierSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
+					results.setError(new Error("ReferenceError(JStoCSS : NonExistentClass)","CSS class not found - " + unusedIdentifier.get(i),unusedIdentifierSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
 				}
 			}
 		}
@@ -344,7 +371,7 @@ public class StaticAnalyzer {
 		if(functionNotFoundList.size() > 0) {
 			for(int i=0;i<functionNotFoundList.size();i++) {
 				Location loc = functionNotFoundLocationList.get(i);
-				results.setError(new Error("ReferenceError(NonExistentFunction)","Function not found - " + functionNotFoundList.get(i),functionNotFoundSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
+				results.setError(new Error("ReferenceError(HTMLtoJS : NonExistentFunction)","Function not found - " + functionNotFoundList.get(i),functionNotFoundSrcFile.get(i),loc.getRowNumber(),loc.getColumnNumber()));
 			}
 		}
 

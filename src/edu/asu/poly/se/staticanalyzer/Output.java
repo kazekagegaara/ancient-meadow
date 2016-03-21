@@ -170,7 +170,6 @@ public class Output {
 	}
 
 	public static void listResultsAsJson(Results results) {
-		Gson gson = new Gson();
 		JsonObject resultsJson = new JsonObject();
 		if(!rulesList.equals("all")) {
 			String rules[] = rulesList.split(",");

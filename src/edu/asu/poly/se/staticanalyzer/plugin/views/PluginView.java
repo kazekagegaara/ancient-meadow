@@ -5,14 +5,12 @@ package edu.asu.poly.se.staticanalyzer.plugin.views;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.part.*;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import edu.asu.poly.se.staticanalyzer.StaticAnalyzer;
 import edu.asu.poly.se.staticanalyzer.results.Results;
-import staticanalyzer.Activator;
 import edu.asu.poly.se.staticanalyzer.results.Error;
 
 import org.eclipse.jface.viewers.*;
@@ -20,8 +18,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 
 import java.io.File;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
@@ -45,8 +46,7 @@ import org.eclipse.swt.events.SelectionEvent;
 public class PluginView extends ViewPart {
 
 	public static final String ID = "edu.asu.poly.se.staticanalyzer.plugin.views.PluginView";
-	
-	private Composite rootParent;
+		
 	private TableViewer viewer;	
 	private Action action1;
 	private Action action2;
@@ -54,12 +54,12 @@ public class PluginView extends ViewPart {
 	private Results results = new Results();
 	private boolean useRecommendations = false;
 	private boolean useDevMode = false;
+	private boolean showWarning = false;
 
 	public PluginView() {
 	}
 
-	public void createPartControl(Composite parent) {
-		rootParent = parent;
+	public void createPartControl(Composite parent) {		
 		GridLayout outerLayout = new GridLayout(1, true);
 		parent.setLayout(outerLayout);
 
@@ -123,6 +123,16 @@ public class PluginView extends ViewPart {
 				useDevMode = devMode.getSelection();
 			}
 		});
+
+		Button showWarnings = new Button(parent, SWT.CHECK);
+		showWarnings.setText("Show Warnings");
+		showWarnings.addSelectionListener(new SelectionAdapter()
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				showWarning = showWarnings.getSelection();
+			}
+		});
 		
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
 			@Override
@@ -147,6 +157,52 @@ public class PluginView extends ViewPart {
 		createViewer(parent);
 	}
 
+	private void generateMarkers() {
+		List<Error> errorsShown = results.getErrors();		
+		IEditorReference[] refs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+		String parentPath = new File(getCurrentFilePath()).getParent().toString();
+		removeExistingMarkers(refs);
+		errorsShown.forEach(error -> {
+			for(int i=0; i<refs.length; i++) {
+				try {				
+					String srcFile = parentPath + File.separator + refs[i].getEditorInput().getName();
+					IWorkspace workspace = ResourcesPlugin.getWorkspace();
+					IWorkspaceRoot workspaceRoot = workspace.getRoot();
+					IPath path = new Path(srcFile);
+					IFile file = workspaceRoot.getFileForLocation(path);					
+					if(srcFile.equals(error.getFileName())) {									
+						IMarker m = file.createMarker(IMarker.PROBLEM);
+						m.setAttribute(IMarker.LINE_NUMBER, error.getRowNumber());
+						m.setAttribute(IMarker.MESSAGE, error.getErrorType() + " " + error.getDesc());
+						m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+						m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+					}					
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}			
+		});
+	}
+	
+	private void removeExistingMarkers(IEditorReference[] refs) {
+		String parentPath = new File(getCurrentFilePath()).getParent().toString();
+		for(int i=0; i<refs.length; i++) { 			
+			try {
+				String srcFile = parentPath + File.separator + refs[i].getEditorInput().getName();
+				IWorkspace workspace = ResourcesPlugin.getWorkspace();
+				IWorkspaceRoot workspaceRoot = workspace.getRoot();
+				IPath path = new Path(srcFile);
+				IFile file = workspaceRoot.getFileForLocation(path);
+				IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IFile.DEPTH_INFINITE);
+				for(int j=0; j<markers.length;j++) {
+					markers[j].delete();
+				}
+			} catch (Exception e) {			
+				e.printStackTrace();
+			}			
+		}
+	}
+
 	private void updateViewer() {		
 		viewer.getTable().removeAll();
 		if ((results != null) && (results.getErrors().size() <= 0)) {
@@ -155,7 +211,17 @@ public class PluginView extends ViewPart {
 			results.setError(err);
 			viewer.setInput(results.getErrors());
 		} else {
-			viewer.setInput(results.getErrors());
+			if(showWarning) {				
+				List<Error> totalResults = results.getErrors();
+				results.getWarnings().forEach(warning -> {
+					totalResults.add(new Error(warning.getWarningType(), warning.getDesc(), warning.getFileName(), warning.getRowNumber(), warning.getColumnNumber()));
+				});				
+				viewer.setInput(totalResults);
+				generateMarkers();
+			} else {
+				viewer.setInput(results.getErrors());
+				generateMarkers();
+			}
 		}	
 	}		
 
@@ -367,6 +433,7 @@ public class PluginView extends ViewPart {
 			IDocument document = provider.getDocument(textEditor.getEditorInput());
 			IRegion loc = document.getLineInformation(lineNumber - 1);
 			textEditor.selectAndReveal(loc.getOffset(), loc.getLength());
+			generateMarkers();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
