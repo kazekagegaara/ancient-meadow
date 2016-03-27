@@ -18,11 +18,16 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
@@ -31,15 +36,16 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
@@ -48,15 +54,28 @@ public class PluginView extends ViewPart {
 	public static final String ID = "edu.asu.poly.se.staticanalyzer.plugin.views.PluginView";
 		
 	private TableViewer viewer;	
-	private Action action1;
-	private Action action2;
+//	private Action action1;
+//	private Action action2;
 	private Action doubleClickAction;
 	private Results results = new Results();
 	private boolean useRecommendations = false;
 	private boolean useDevMode = false;
 	private boolean showWarning = false;
+	private final static Logger LOGGER = Logger.getLogger(PluginView.class.getName());
+	static private FileHandler fileTxt;
+    static private SimpleFormatter formatterTxt;
+
 
 	public PluginView() {
+		LOGGER.setLevel(Level.INFO);
+		try {
+			fileTxt = new FileHandler("Logging.txt");
+			formatterTxt = new SimpleFormatter();
+		    fileTxt.setFormatter(formatterTxt);
+		    LOGGER.addHandler(fileTxt);
+		} catch (SecurityException | IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void createPartControl(Composite parent) {		
@@ -137,7 +156,7 @@ public class PluginView extends ViewPart {
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
 			@Override
 			public void resourceChanged(IResourceChangeEvent event) {
-				if(useDevMode && event.getType() == 1) {
+				if(event.getType() == 1) {
 					System.out.println("Something changed!");
 					String path = getCurrentFilePath();				
 					if(!path.equals("")){
@@ -148,7 +167,14 @@ public class PluginView extends ViewPart {
 						results.getErrors().clear();
 						results.getWarnings().clear();
 						results = StaticAnalyzer.runStaticAnalyzer(args, true);
-						updateViewer();
+						if(useDevMode) {
+							updateViewer();
+						}
+						LOGGER.info("File saved");
+						results.getErrors().forEach(error -> {
+							LOGGER.info(error.getErrorType() + " " + error.getDesc() + " " + error.getFileName() + " " + error.getRowNumber() + " " + error.getColumnNumber());
+						});
+//						generateMarkers();
 					}
 				}
 	        }
@@ -216,9 +242,11 @@ public class PluginView extends ViewPart {
 				results.getWarnings().forEach(warning -> {
 					totalResults.add(new Error(warning.getWarningType(), warning.getDesc(), warning.getFileName(), warning.getRowNumber(), warning.getColumnNumber()));
 				});				
+				Collections.sort(totalResults, (r1,r2) -> r1.getRowNumber() - r2.getRowNumber());
 				viewer.setInput(totalResults);
 				generateMarkers();
 			} else {
+				Collections.sort(results.getErrors(), (r1,r2) -> r1.getRowNumber() - r2.getRowNumber());
 				viewer.setInput(results.getErrors());
 				generateMarkers();
 			}
@@ -242,9 +270,9 @@ public class PluginView extends ViewPart {
 		getSite().setSelectionProvider(viewer);
 
 		makeActions();
-		hookContextMenu();
+//		hookContextMenu();
 		hookDoubleClickAction();
-		contributeToActionBars();
+//		contributeToActionBars();
 
 		GridData gridData = new GridData();
 		gridData.verticalAlignment = GridData.FILL;
@@ -254,6 +282,23 @@ public class PluginView extends ViewPart {
 		gridData.horizontalAlignment = GridData.FILL;
 		viewer.getControl().setLayoutData(gridData);
 
+		initHandler();
+	}
+	
+	private void initHandler() {
+		ITextEditor editor = (ITextEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		((StyledText)editor.getAdapter(org.eclipse.swt.widgets.Control.class)).addKeyListener(new KeyListener() {
+						
+			@Override
+			public void keyPressed(KeyEvent e) {				
+				LOGGER.info("Keycode : " + e.keyCode + " Character : " + e.character + " StateMask : " + e.stateMask);				
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// Do nothing
+			}
+		});
 	}
 
 	private String getCurrentFilePath() {
@@ -337,63 +382,63 @@ public class PluginView extends ViewPart {
 		return viewerColumn;
 	}
 
-	private void hookContextMenu() {
-		MenuManager menuMgr = new MenuManager("#PopupMenu");
-		menuMgr.setRemoveAllWhenShown(true);
-		menuMgr.addMenuListener(new IMenuListener() {
-			public void menuAboutToShow(IMenuManager manager) {
-				PluginView.this.fillContextMenu(manager);
-			}
-		});
-		Menu menu = menuMgr.createContextMenu(viewer.getControl());
-		viewer.getControl().setMenu(menu);
-		getSite().registerContextMenu(menuMgr, viewer);
-	}
+//	private void hookContextMenu() {
+//		MenuManager menuMgr = new MenuManager("#PopupMenu");
+//		menuMgr.setRemoveAllWhenShown(true);
+//		menuMgr.addMenuListener(new IMenuListener() {
+//			public void menuAboutToShow(IMenuManager manager) {
+//				PluginView.this.fillContextMenu(manager);
+//			}
+//		});
+//		Menu menu = menuMgr.createContextMenu(viewer.getControl());
+//		viewer.getControl().setMenu(menu);
+//		getSite().registerContextMenu(menuMgr, viewer);
+//	}
+//
+//	private void contributeToActionBars() {
+//		IActionBars bars = getViewSite().getActionBars();
+//		fillLocalPullDown(bars.getMenuManager());
+//		fillLocalToolBar(bars.getToolBarManager());
+//	}
 
-	private void contributeToActionBars() {
-		IActionBars bars = getViewSite().getActionBars();
-		fillLocalPullDown(bars.getMenuManager());
-		fillLocalToolBar(bars.getToolBarManager());
-	}
-
-	private void fillLocalPullDown(IMenuManager manager) {
-		manager.add(action1);
-		manager.add(new Separator());
-		manager.add(action2);
-	}
-
-	private void fillContextMenu(IMenuManager manager) {
-		manager.add(action1);
-		manager.add(action2);
-		// Other plug-ins can contribute there actions here
-		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-	}
-
-	private void fillLocalToolBar(IToolBarManager manager) {
-		manager.add(action1);
-		manager.add(action2);
-	}
+//	private void fillLocalPullDown(IMenuManager manager) {
+//		manager.add(action1);
+//		manager.add(new Separator());
+//		manager.add(action2);
+//	}
+//
+//	private void fillContextMenu(IMenuManager manager) {
+//		manager.add(action1);
+//		manager.add(action2);
+//		// Other plug-ins can contribute there actions here
+//		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+//	}
+//
+//	private void fillLocalToolBar(IToolBarManager manager) {
+//		manager.add(action1);
+//		manager.add(action2);
+//	}
 
 	private void makeActions() {
-		action1 = new Action() {
-			public void run() {
-				showMessage("Action 1 executed");
-			}
-		};
-		action1.setText("Action 1");
-		action1.setToolTipText("Action 1 tooltip");
-		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-
-		action2 = new Action() {
-			public void run() {
-				showMessage("Action 2 executed");
-			}
-		};
-		action2.setText("Action 2");
-		action2.setToolTipText("Action 2 tooltip");
-		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+//		action1 = new Action() {
+//			public void run() {
+//				showMessage("Action 1 executed");
+//			}
+//		};
+//		action1.setText("Action 1");
+//		action1.setToolTipText("Action 1 tooltip");
+//		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+//				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+//
+//		action2 = new Action() {
+//			public void run() {
+//				showMessage("Action 2 executed");
+//			}
+//		};
+//		action2.setText("Action 2");
+//		action2.setToolTipText("Action 2 tooltip");
+//		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+//				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		doubleClickAction = new Action() {
 			public void run() {
 				ISelection selection = viewer.getSelection();
@@ -410,12 +455,12 @@ public class PluginView extends ViewPart {
 			}
 		});
 	}
-	private void showMessage(String message) {
-		MessageDialog.openInformation(
-				viewer.getControl().getShell(),
-				"Static Analyzer",
-				message);
-	}
+//	private void showMessage(String message) {
+//		MessageDialog.openInformation(
+//				viewer.getControl().getShell(),
+//				"Static Analyzer",
+//				message);
+//	}
 
 	private void goToLine(Object obj) {
 		Error err = (Error)obj;
