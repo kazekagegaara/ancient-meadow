@@ -85,8 +85,8 @@ function reqListener () {
         cell1.innerHTML = jsonData.FileNotFoundErrors[error].errorType;
         cell2.innerHTML = jsonData.FileNotFoundErrors[error].desc;
         cell3.innerHTML = jsonData.FileNotFoundErrors[error].fileName;
-        cell4.innerHTML = jsonData.FileNotFoundErrors[error].columnNumber;
-        cell5.innerHTML = jsonData.FileNotFoundErrors[error].rowNumber;
+        cell4.innerHTML = jsonData.FileNotFoundErrors[error].rowNumber;
+        cell5.innerHTML = jsonData.FileNotFoundErrors[error].columnNumber;
         counter++;
     }
     fileNotFoundErrorsDiv.className = "show";
@@ -104,8 +104,8 @@ function reqListener () {
         cell1.innerHTML = jsonData.ParseErrors[error].errorType;
         cell2.innerHTML = jsonData.ParseErrors[error].desc;
         cell3.innerHTML = jsonData.ParseErrors[error].fileName;
-        cell4.innerHTML = jsonData.ParseErrors[error].columnNumber;
-        cell5.innerHTML = jsonData.ParseErrors[error].rowNumber;
+        cell4.innerHTML = jsonData.ParseErrors[error].rowNumber;
+        cell5.innerHTML = jsonData.ParseErrors[error].columnNumber;
         counter++;
     }
     parseErrorsDiv.className = "show";
@@ -123,8 +123,8 @@ function reqListener () {
         cell1.innerHTML = jsonData.ReferenceErrors[error].errorType;
         cell2.innerHTML = jsonData.ReferenceErrors[error].desc;
         cell3.innerHTML = jsonData.ReferenceErrors[error].fileName;
-        cell4.innerHTML = jsonData.ReferenceErrors[error].columnNumber;
-        cell5.innerHTML = jsonData.ReferenceErrors[error].rowNumber;
+        cell4.innerHTML = jsonData.ReferenceErrors[error].rowNumber;
+        cell5.innerHTML = jsonData.ReferenceErrors[error].columnNumber;
         counter++;
     }
     referenceErrorsDiv.className = "show";
@@ -142,8 +142,8 @@ function reqListener () {
         cell1.innerHTML = jsonData.Warnings[error].errorType;
         cell2.innerHTML = jsonData.Warnings[error].desc;
         cell3.innerHTML = jsonData.Warnings[error].fileName;
-        cell4.innerHTML = jsonData.Warnings[error].columnNumber;
-        cell5.innerHTML = jsonData.Warnings[error].rowNumber;
+        cell4.innerHTML = jsonData.Warnings[error].rowNumber;
+        cell5.innerHTML = jsonData.Warnings[error].columnNumber;
         counter++;
     }
     warningsDiv.className = "show";
