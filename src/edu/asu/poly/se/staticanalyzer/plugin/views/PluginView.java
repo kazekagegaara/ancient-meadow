@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.swt.widgets.Table;
@@ -102,6 +103,26 @@ public class PluginView extends ViewPart {
 			}
 		});
 		runBtn.setLayoutData(new GridData());
+		
+		Button reportBtn = new Button(parent, SWT.PUSH);
+		reportBtn.setText("Report");
+		reportBtn.addSelectionListener(new SelectionAdapter()
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				ReportDialog dialog = new ReportDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+				dialog.create();
+				if (dialog.open() == Window.OK) {
+				  System.out.println(dialog.getHowWasDefectFound());
+				  System.out.println(dialog.getHowToReproduceDefect());
+				  System.out.println(dialog.getLineNumber());
+				  System.out.println(dialog.getFileName());
+				  System.out.println(dialog.getDescription());
+				} 
+
+			}
+		});
+		reportBtn.setLayoutData(new GridData());
 
 		Button recommendationCheck = new Button(parent, SWT.CHECK);
 		recommendationCheck.setText("Use Recommendations");
