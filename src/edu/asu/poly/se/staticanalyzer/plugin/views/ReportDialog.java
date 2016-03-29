@@ -18,12 +18,14 @@ public class ReportDialog extends TitleAreaDialog {
 	private Text lineNumber;
 	private Text fileName;
 	private Text description;	
+	private Text uid;
 
 	private String howWasDefectFoundString;
 	private String howToReproduceDefectString;
 	private String lineNumberString;
 	private String fileNameString;
 	private String descriptionString;
+	private String uidString;
 
 	public ReportDialog(Shell parentShell) {
 		super(parentShell);
@@ -48,10 +50,24 @@ public class ReportDialog extends TitleAreaDialog {
 		createHowToReproduce(container);
 		createLineNumber(container);
 		createFileName(container);
-		createDescription(container);		
+		createDescription(container);	
+		createUid(container);
 
 		return area;
 	}	
+	
+	private void createUid(Composite container) {
+		Label uidLbl = new Label(container, SWT.NONE);
+		uidLbl.setText("Enter your unique identifier");
+
+		GridData dataUid = new GridData();
+		dataUid.grabExcessHorizontalSpace = true;
+		dataUid.horizontalAlignment = GridData.FILL;
+
+		uid = new Text(container, SWT.BORDER);
+		uid.setLayoutData(dataUid);
+	}
+
 
 	private void createHowDefectWasFound(Composite container) {
 		Label howDefectWasFoundLbl = new Label(container, SWT.NONE);
@@ -111,13 +127,14 @@ public class ReportDialog extends TitleAreaDialog {
 		description = new Text(container, SWT.BORDER);
 		description.setLayoutData(dataDescription);
 	}
-
+	
 	@Override
 	protected boolean isResizable() {
 		return true;
 	}
 
 	private void saveInput() {
+		uidString = uid.getText();
 		howWasDefectFoundString = howWasDefectFound.getText();
 		howToReproduceDefectString = howToReproduceDefect.getText();
 		lineNumberString = lineNumber.getText();
@@ -131,6 +148,10 @@ public class ReportDialog extends TitleAreaDialog {
 		super.okPressed();
 	}
 
+	public String getUid() {
+		return uidString;
+	}
+	
 	public String getHowWasDefectFound() {
 		return howWasDefectFoundString;
 	}
