@@ -201,9 +201,11 @@ public class PluginView extends ViewPart {
 				@Override
 				public void resourceChanged(IResourceChangeEvent event) {
 					workspaceListenerInit = true;
-					System.out.println(event.getSource());
-					System.out.println(event.getDelta().getFlags());
-					if(event.getType() == IResourceChangeEvent.POST_CHANGE && event.getDelta().getFlags() == IResourceDelta.LOCAL_CHANGED) {
+//					System.out.println(event.getSource());
+//					System.out.println(event.getDelta().getFlags());
+//					System.out.println(event.getDelta().getKind());
+//					System.out.println(event.getResource());
+					if(event.getType() == IResourceChangeEvent.POST_CHANGE) {
 						System.out.println("Something changed!");
 						IEditorPart  editorPart = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
 						if(editorPart  != null)
@@ -284,7 +286,7 @@ public class PluginView extends ViewPart {
 	private void generateMarkers() {
 		List<Error> errorsShown = results.getErrors();		
 		IEditorReference[] refs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-//		removeExistingMarkers(refs);		
+		removeExistingMarkers(refs);
 		for(int i=0; i<refs.length; i++) {
 			try {
 				IEditorInput input = refs[i].getEditorInput();
