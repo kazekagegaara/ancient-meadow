@@ -47,5 +47,8 @@ public class Recommendations {
 				results.getErrors().get(i).setFixRecommendation("Check for syntax errors!");
 			}
 		}
+		for(int i=0;i<results.getWarnings().size();i++) {
+			results.getWarnings().get(i).setFixRecommendation("Remove the unused attribute.");
+		}
 	}
 }

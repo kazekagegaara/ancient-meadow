@@ -5,7 +5,9 @@ package edu.asu.poly.se.staticanalyzer.plugin.views;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.*;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -22,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -31,6 +34,7 @@ import java.util.logging.SimpleFormatter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -62,13 +66,12 @@ public class PluginView extends ViewPart {
 	private Action doubleClickAction;
 	private Results results = new Results();
 	private boolean useRecommendations = false;
-	private boolean useDevMode = false;
+//	private boolean useDevMode = false;
 	private boolean showWarning = false;
-	private boolean workspaceListenerInit = false;
+//	private boolean workspaceListenerInit = false;
 	private final static Logger LOGGER = Logger.getLogger(PluginView.class.getName());
 	private static FileHandler fileTxt;
 	private static SimpleFormatter formatterTxt;
-	private static List<Integer> instantiatedEditors = new ArrayList<Integer>();
 
 
 	public PluginView() {
@@ -93,13 +96,12 @@ public class PluginView extends ViewPart {
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				IEditorPart  editorPart = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
+				IEditorPart editorPart = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
 				if(editorPart  != null)
 				{
-					IFileEditorInput input = (IFileEditorInput)editorPart.getEditorInput() ;
+					IFileEditorInput input = (IFileEditorInput)editorPart.getEditorInput();
 					IFile file = input.getFile();
 					IProject activeProject = file.getProject();
-					System.out.println(activeProject.getRawLocation().toOSString());
 					String[] args = new String[2];
 					args[0] = "--source="+activeProject.getRawLocation().toOSString();
 					args[1] = "--recommendations=yes";
@@ -108,17 +110,6 @@ public class PluginView extends ViewPart {
 					results = StaticAnalyzer.runStaticAnalyzer(args, true);
 					updateViewer();
 				}
-				//				String path = getCurrentFilePath();				
-				//				if(!path.equals("")){
-				//					path = new File(path).getParent().toString();
-				//					String[] args = new String[2];
-				//					args[0] = "--source="+path;
-				//					args[1] = "--recommendations=yes";
-				//					results.getErrors().clear();
-				//					results.getWarnings().clear();
-				//					results = StaticAnalyzer.runStaticAnalyzer(args, true);
-				//					updateViewer();
-				//				}
 			}
 		});
 		runBtn.setLayoutData(new GridData());
@@ -176,15 +167,15 @@ public class PluginView extends ViewPart {
 		});
 		recommendationCheck.setLayoutData(new GridData());
 
-		Button devMode = new Button(parent, SWT.CHECK);
-		devMode.setText("Enable Dev Mode");
-		devMode.addSelectionListener(new SelectionAdapter()
-		{
-			public void widgetSelected(SelectionEvent e)
-			{
-				useDevMode = devMode.getSelection();
-			}
-		});
+//		Button devMode = new Button(parent, SWT.CHECK);
+//		devMode.setText("Enable Dev Mode");
+//		devMode.addSelectionListener(new SelectionAdapter()
+//		{
+//			public void widgetSelected(SelectionEvent e)
+//			{
+//				useDevMode = devMode.getSelection();
+//			}
+//		});
 
 		Button showWarnings = new Button(parent, SWT.CHECK);
 		showWarnings.setText("Show Warnings");
@@ -195,90 +186,32 @@ public class PluginView extends ViewPart {
 				showWarning = showWarnings.getSelection();
 			}
 		});		
-		
-		if(!workspaceListenerInit) {
-			ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
-				@Override
-				public void resourceChanged(IResourceChangeEvent event) {
-					workspaceListenerInit = true;
-//					System.out.println(event.getSource());
-//					System.out.println(event.getDelta().getFlags());
-//					System.out.println(event.getDelta().getKind());
-//					System.out.println(event.getResource());
-					if(event.getType() == IResourceChangeEvent.POST_CHANGE) {
-						System.out.println("Something changed!");
-						IEditorPart  editorPart = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
-						if(editorPart  != null)
-						{
-							IFileEditorInput input = (IFileEditorInput)editorPart.getEditorInput() ;
-							IFile file = input.getFile();
-							IProject activeProject = file.getProject();
-							System.out.println(activeProject.getRawLocation().toOSString());
-							String[] args = new String[2];
-							args[0] = "--source="+activeProject.getRawLocation().toOSString();
-							args[1] = "--recommendations=yes";
-							results.getErrors().clear();
-							results.getWarnings().clear();
-							results = StaticAnalyzer.runStaticAnalyzer(args, true);
-							if(useDevMode) {
-								updateViewer();
-							}
-							LOGGER.info("File saved");
-							results.getErrors().forEach(error -> {
-								LOGGER.info(error.getErrorType() + " " + error.getDesc() + " " + error.getFileName() + " " + error.getRowNumber() + " " + error.getColumnNumber());
-							});
-						}
-					}
-				}
-			});
-		}		
 
-		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		if (window != null) {
-			IWorkbenchPage[] pages = window.getPages();
-			for (int i = 0; i < pages.length; i++) {
-				IWorkbenchPage p = pages[i];
-				p.addPartListener(new IPartListener2() {
-
-					@Override
-					public void partDeactivated(IWorkbenchPartReference arg0) {
-					}
-
-					@Override
-					public void partHidden(IWorkbenchPartReference arg0) {						
-					}
-
-					@Override
-					public void partInputChanged(IWorkbenchPartReference arg0) {
-					}
-
-					@Override
-					public void partOpened(IWorkbenchPartReference arg0) {
-					}
-
-					@Override
-					public void partVisible(IWorkbenchPartReference arg0) {
-						System.out.println("new window visible");
-						System.out.println(arg0.getTitle());
-						initHandler();
-					}
-
-					@Override
-					public void partActivated(IWorkbenchPartReference arg0) {					
-					}
-
-					@Override
-					public void partBroughtToTop(IWorkbenchPartReference arg0) {
-					}
-
-					@Override
-					public void partClosed(IWorkbenchPartReference arg0) {
-						System.out.println("window closed");
-					}
-
-				});
-			}
-		}
+//		if(!workspaceListenerInit) {
+//			ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
+//				@Override
+//				public void resourceChanged(IResourceChangeEvent event) {
+//					workspaceListenerInit = true;					
+//					if(event.getType() == IResourceChangeEvent.POST_CHANGE) {
+//						IEditorPart editorPart = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
+//						if(editorPart != null && useDevMode)
+//						{
+//							IFileEditorInput input = (IFileEditorInput)editorPart.getEditorInput() ;
+//							IFile file = input.getFile();
+//							IProject activeProject = file.getProject();
+//							System.out.println(activeProject.getRawLocation().toOSString());
+//							String[] args = new String[2];
+//							args[0] = "--source="+activeProject.getRawLocation().toOSString();
+//							args[1] = "--recommendations=yes";
+//							results.getErrors().clear();
+//							results.getWarnings().clear();
+//							results = StaticAnalyzer.runStaticAnalyzer(args, true);						
+//							updateViewer();
+//						}
+//					}
+//				}
+//			});
+//		}		
 
 		createViewer(parent);
 	}
@@ -286,7 +219,6 @@ public class PluginView extends ViewPart {
 	private void generateMarkers() {
 		List<Error> errorsShown = results.getErrors();		
 		IEditorReference[] refs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
-		removeExistingMarkers(refs);
 		for(int i=0; i<refs.length; i++) {
 			try {
 				IEditorInput input = refs[i].getEditorInput();
@@ -313,17 +245,13 @@ public class PluginView extends ViewPart {
 		}					
 	}
 
-	private void removeExistingMarkers(IEditorReference[] refs) {
-		String parentPath = new File(getCurrentFilePath()).getParent().toString();
+	private void removeExistingMarkers() {
+		IEditorReference[] refs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences();
 		for(int i=0; i<refs.length; i++) { 			
-			try {
-				System.out.println(refs[i].getEditorInput().getName());
-				String srcFile = parentPath + File.separator + refs[i].getEditorInput().getName();
-				IWorkspace workspace = ResourcesPlugin.getWorkspace();
-				IWorkspaceRoot workspaceRoot = workspace.getRoot();
-				IPath path = new Path(srcFile);
-				IFile file = workspaceRoot.getFileForLocation(path);
-				IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IFile.DEPTH_INFINITE);
+			try {				
+				IEditorInput input = refs[i].getEditorInput();
+				IFile file = ((IFileEditorInput)input).getFile();					
+				IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IFile.DEPTH_ZERO);
 				for(int j=0; j<markers.length;j++) {
 					markers[j].delete();
 				}
@@ -331,7 +259,7 @@ public class PluginView extends ViewPart {
 				e.printStackTrace();
 			}			
 		}
-	}
+	}	
 
 	private void updateViewer() {		
 		viewer.getTable().removeAll();
@@ -344,14 +272,18 @@ public class PluginView extends ViewPart {
 			if(showWarning) {				
 				List<Error> totalResults = results.getErrors();
 				results.getWarnings().forEach(warning -> {
-					totalResults.add(new Error(warning.getWarningType(), warning.getDesc(), warning.getFileName(), warning.getRowNumber(), warning.getColumnNumber()));
+					Error err = new Error(warning.getWarningType(), warning.getDesc(), warning.getFileName(), warning.getRowNumber(), warning.getColumnNumber());
+					err.setFixRecommendation(warning.getFixRecommendation());
+					totalResults.add(err);
 				});				
 				Collections.sort(totalResults, (r1,r2) -> r1.getRowNumber() - r2.getRowNumber());
 				viewer.setInput(totalResults);
+				removeExistingMarkers();
 				generateMarkers();
 			} else {
 				Collections.sort(results.getErrors(), (r1,r2) -> r1.getRowNumber() - r2.getRowNumber());
 				viewer.setInput(results.getErrors());
+				removeExistingMarkers();
 				generateMarkers();
 			}
 		}	
@@ -387,34 +319,19 @@ public class PluginView extends ViewPart {
 	}
 
 	private void initHandler() {
-		ITextEditor editor = (ITextEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if(editor != null) {			
-			if(!instantiatedEditors.contains(editor.hashCode())) {
-				instantiatedEditors.add(editor.hashCode());
-				((StyledText)editor.getAdapter(org.eclipse.swt.widgets.Control.class)).addKeyListener(new KeyListener() {
-
-					@Override
-					public void keyPressed(KeyEvent e) {				
-						LOGGER.info("Keycode : " + e.keyCode + " Character : " + e.character + " StateMask : " + e.stateMask);				
-					}
-
-					@Override
-					public void keyReleased(KeyEvent e) {
-					}
-				});
-			} 
-		}		
-	}
-
-	private String getCurrentFilePath() {
-		String path = "";
-		IWorkbenchPart workbenchPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
-		IFile file = (IFile)workbenchPart.getSite().getPage().getActiveEditor().getEditorInput().getAdapter(IFile.class);
-		if(file != null) {
-			path = file.getRawLocation().toOSString();
-		}
-		return path;
-	}
+		Shell activeShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+		activeShell.getDisplay().addFilter(SWT.KeyDown, new Listener()
+		{
+			@Override
+			public void handleEvent(Event e)
+			{		    
+				System.out.println("Filter-mask: " + e.stateMask);
+				System.out.println("Filter-char: " + e.keyCode);
+				System.out.println(e.character);
+				LOGGER.info("Keycode : " + e.keyCode + " Character : " + e.character + " StateMask : " + e.stateMask);
+			}
+		});
+	}	
 
 	private void createColumns(final Composite parent, final TableViewer viewer) {
 

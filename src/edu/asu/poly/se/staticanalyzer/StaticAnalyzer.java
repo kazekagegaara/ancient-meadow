@@ -17,6 +17,8 @@ import edu.asu.poly.se.staticanalyzer.results.Warning;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -220,14 +222,14 @@ public class StaticAnalyzer {
 				});
 			}
 
-			List<String> retrievedClassList = file.getClasses();
+			List<String> retrievedClassList = file.getClasses();			
 			if(retrievedClassList.size() > 0) {
-				for(int i=0;i<retrievedClassList.size();i++) {
+				for(int i=0;i<retrievedClassList.size();i++) {					
 					if(originalClassList.contains(retrievedClassList.get(i))) {
-						originalClassList.remove(retrievedClassList.get(i));
+						originalClassList.removeAll(Collections.singleton(retrievedClassList.get(i)));
 					}
 				}
-			}
+			}			
 
 			List<String> retrievedIdList = file.getIds();
 			if(retrievedIdList.size() > 0) {
@@ -245,6 +247,19 @@ public class StaticAnalyzer {
 				}
 			}
 		});
+
+//		cssFiles.forEach(file -> {
+//			//			if(originalClassList.size() > 0) {
+//			//				originalClassList.removeIf(className -> fileHelper.getLocationInFile(className,file.getFile().toString()).getRowNumber() != -1);
+//			//			}
+//			for (Iterator<String> iterator = originalClassList.iterator(); iterator.hasNext();) {
+//			    String className = iterator.next();
+//			    Location loc = fileHelper.getLocationInFile(className,file.getFile().toString());
+//			    if (loc.getRowNumber() != -1) {
+//			        iterator.remove();
+//			    }
+//			}
+//		});
 
 		if(originalClassList.size() > 0) {
 			for(int i=0;i<originalClassList.size();i++) {

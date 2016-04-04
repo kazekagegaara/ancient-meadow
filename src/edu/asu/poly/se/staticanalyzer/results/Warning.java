@@ -11,6 +11,7 @@ public class Warning {
 	private String fileName;
 	private int rowNumber;
 	private int columnNumber;
+	private String fixRecommendation;
 
 	public Warning(String warningType, String desc, String fileName, int rowNumber, int columnNumber) {
 		this.warningType = warningType;
@@ -38,5 +39,13 @@ public class Warning {
 
 	public int getColumnNumber() {
 		return this.columnNumber;
+	}
+	
+	public String getFixRecommendation() {
+		return this.fixRecommendation;
+	}
+	
+	public void setFixRecommendation(String fixRecommendation) {
+		this.fixRecommendation = fixRecommendation;
 	}
 }

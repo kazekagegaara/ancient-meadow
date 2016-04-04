@@ -20,6 +20,7 @@ import org.w3c.css.sac.InputSource;
 import org.w3c.css.sac.ErrorHandler;
 import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.css.CSSRuleList;
+import org.w3c.dom.css.CSSMediaRule;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSStyleRule;
 
@@ -34,7 +35,7 @@ public class CSSParser {
 		CSSOMParser parser = new CSSOMParser(new SACParserCSS3());
 		ErrorHandler errorHandler = new CSSParseErrorHandler(file);
 		parser.setErrorHandler(errorHandler);
-		CSSStyleSheet stylesheet = parser.parseStyleSheet(source, null, null);
+		CSSStyleSheet stylesheet = parser.parseStyleSheet(source, null, null);		
 		ruleList = stylesheet.getCssRules();
 	}
 
@@ -52,7 +53,7 @@ public class CSSParser {
 		{
 			CSSRule rule = ruleList.item(i);
 			if (rule instanceof CSSStyleRule) {
-				CSSStyleRule styleRule=(CSSStyleRule)rule;
+				CSSStyleRule styleRule = (CSSStyleRule)rule;
 				String pattern = "";
 				if(type.equals("classes")) {
 					pattern = "(\\.)-?[_a-zA-Z]+[_a-zA-Z0-9-]*";
@@ -60,6 +61,18 @@ public class CSSParser {
 					pattern = "(#)-?[_a-zA-Z]+[_a-zA-Z0-9-]*";
 				}
 				Matcher m = Pattern.compile(pattern).matcher(styleRule.getSelectorText().toString());
+				while (m.find()) {
+					identifiers.add(m.group().substring(1));
+				}
+			} else if(rule instanceof CSSMediaRule){
+				CSSMediaRule mediaRule = (CSSMediaRule)rule;
+				String pattern = "";
+				if(type.equals("classes")) {
+					pattern = "(\\.)-?[_a-zA-Z]+[_a-zA-Z0-9-]*";
+				} else if(type.equals("ids")) {
+					pattern = "(#)-?[_a-zA-Z]+[_a-zA-Z0-9-]*";
+				}
+				Matcher m = Pattern.compile(pattern).matcher(mediaRule.getCssText());
 				while (m.find()) {
 					identifiers.add(m.group().substring(1));
 				}
