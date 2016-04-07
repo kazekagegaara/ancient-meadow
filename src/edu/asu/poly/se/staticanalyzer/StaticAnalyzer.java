@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -171,8 +173,11 @@ public class StaticAnalyzer {
 					List<String> fileClasses = cssfile.getClasses();
 					for(int i=0;i<unusedCSS.size();i++) {
 						if(fileClasses.contains(unusedCSS.get(i))) {
-							Location loc = fileHelper.getLocationInFile(unusedCSS.get(i), currentSrc);
-							results.setWarning(new Warning("UnusedCSSWarning",unusedCSS.get(i),currentSrc,loc.getRowNumber(),loc.getColumnNumber()));								
+							List<Location> locs = fileHelper.getLocationInFile(unusedCSS.get(i), currentSrc);
+							for(int j=0; j<locs.size(); j++) {
+								Location loc = locs.get(j);
+								results.setWarning(new Warning("UnusedCSSWarning",unusedCSS.get(i),currentSrc,loc.getRowNumber(),loc.getColumnNumber()));
+							}															
 						}
 					}
 				} catch (Exception e) {					
@@ -192,8 +197,11 @@ public class StaticAnalyzer {
 				String currentSrc = file.getFile().getPath().toString();
 				for(int i=0;i<unusedID.size();i++) {
 					if(fileIds.contains(unusedID.get(i))) {
-						Location loc = fileHelper.getLocationInFile(unusedID.get(i), currentSrc);
-						results.setWarning(new Warning("UnusedIDWarning",unusedID.get(i),currentSrc,loc.getRowNumber(),loc.getColumnNumber()));
+						List<Location> locs = fileHelper.getLocationInFile(unusedID.get(i), currentSrc);
+						for(int j=0; j<locs.size(); j++) {
+							Location loc = locs.get(j);
+							results.setWarning(new Warning("UnusedIDWarning",unusedID.get(i),currentSrc,loc.getRowNumber(),loc.getColumnNumber()));
+						}
 					}					
 				}
 			});			
@@ -263,15 +271,21 @@ public class StaticAnalyzer {
 
 		if(originalClassList.size() > 0) {
 			for(int i=0;i<originalClassList.size();i++) {
-				Location loc = fileHelper.getLocationInFile(originalClassList.get(i),src);
-				results.setError(new Error("ReferenceError(HTMLtoCSS : NonExistentClass)","CSS class not found - " + originalClassList.get(i),src,loc.getRowNumber(),loc.getColumnNumber()));
+				List<Location> locs = fileHelper.getLocationInFile(originalClassList.get(i),src);
+				for(int j=0; j<locs.size(); j++) {
+					Location loc = locs.get(j);
+					results.setError(new Error("ReferenceError(HTMLtoCSS : NonExistentClass)","CSS class not found - " + originalClassList.get(i),src,loc.getRowNumber(),loc.getColumnNumber()));
+				}
 			}
 		}
 
 		if(nonExistentIdRef.size() > 0) {
 			for(int i=0;i<nonExistentIdRef.size();i++) {
-				Location loc = fileHelper.getLocationInFile(nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i));
-				results.setError(new Error("ReferenceError(CSStoHTML : NonExistentID)","ID not found - " + nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i),loc.getRowNumber(),loc.getColumnNumber()));
+				List<Location> locs = fileHelper.getLocationInFile(nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i));
+				for(int j=0; j<locs.size(); j++) {
+					Location loc = locs.get(j);
+					results.setError(new Error("ReferenceError(CSStoHTML : NonExistentID)","ID not found - " + nonExistentIdRef.get(i),nonExistentIdRefSrc.get(i),loc.getRowNumber(),loc.getColumnNumber()));
+				}
 			}
 		}
 	}
@@ -317,7 +331,7 @@ public class StaticAnalyzer {
 					JSParser jsParser = new JSParser(file);
 					jsParser.parseJS();
 				} catch(Exception e) {
-					results.setError(new Error("ParseError",file.getFile().toString(),file.getFile().toString(),-1,-1));
+					results.setError(new Error("JSParseError",file.getFile().toString(),file.getFile().toString(),-1,-1));
 				}
 			}
 
@@ -348,11 +362,11 @@ public class StaticAnalyzer {
 			if(functonList != null) {
 				List<String> retrievedFunctions = file.getFunctions();
 				List<Integer> retrievedFunctionsParams = file.getFunctionParams();
-
+				
 				for(int i=0;i<retrievedFunctions.size();i++) {
-					if(originalFuncList.contains(retrievedFunctions.get(i))) {
+					while(originalFuncList.contains(retrievedFunctions.get(i))) {						
 						int index = originalFuncList.indexOf(retrievedFunctions.get(i));
-						if(originalFuncParamList.get(index) == retrievedFunctionsParams.get(i)) {
+						if(originalFuncParamList.get(index) == retrievedFunctionsParams.get(i)) {							
 							originalFuncList.remove(index);
 							originalFuncParamList.remove(index);
 						}
@@ -361,11 +375,18 @@ public class StaticAnalyzer {
 			}
 		});
 
-		if(originalFuncList.size() > 0) {
+		Set<String> depdupeFuncList = new LinkedHashSet<>(originalFuncList);
+		originalFuncList.clear();
+		originalFuncList.addAll(depdupeFuncList);
+		
+		if(originalFuncList.size() > 0) {			
 			for(int i=0;i<originalFuncList.size();i++) {
-				functionNotFoundList.add(originalFuncList.get(i));
-				functionNotFoundSrcFile.add(src);
-				functionNotFoundLocationList.add(fileHelper.getLocationInFile(originalFuncList.get(i),src));
+				List<Location> locs = fileHelper.getLocationInFile(originalFuncList.get(i),src);
+				for(int j=0; j<locs.size(); j++) {					
+					functionNotFoundList.add(originalFuncList.get(i));
+					functionNotFoundSrcFile.add(src);
+					functionNotFoundLocationList.add(locs.get(j));
+				}			
 			}
 		}
 

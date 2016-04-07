@@ -5,6 +5,7 @@ package edu.asu.poly.se.staticanalyzer.plugin.views;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
@@ -66,9 +67,9 @@ public class PluginView extends ViewPart {
 	private Action doubleClickAction;
 	private Results results = new Results();
 	private boolean useRecommendations = false;
-//	private boolean useDevMode = false;
+	//	private boolean useDevMode = false;
 	private boolean showWarning = false;
-//	private boolean workspaceListenerInit = false;
+	//	private boolean workspaceListenerInit = false;
 	private final static Logger LOGGER = Logger.getLogger(PluginView.class.getName());
 	private static FileHandler fileTxt;
 	private static SimpleFormatter formatterTxt;
@@ -77,7 +78,7 @@ public class PluginView extends ViewPart {
 	public PluginView() {
 		LOGGER.setLevel(Level.INFO);
 		try {
-			fileTxt = new FileHandler("Logging.txt");
+			fileTxt = new FileHandler("%hedu.asu.poly.staticanalyzer.log");
 			formatterTxt = new SimpleFormatter();
 			fileTxt.setFormatter(formatterTxt);
 			LOGGER.addHandler(fileTxt);
@@ -96,20 +97,31 @@ public class PluginView extends ViewPart {
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				IEditorPart editorPart = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
-				if(editorPart  != null)
-				{
-					IFileEditorInput input = (IFileEditorInput)editorPart.getEditorInput();
-					IFile file = input.getFile();
-					IProject activeProject = file.getProject();
-					String[] args = new String[2];
-					args[0] = "--source="+activeProject.getRawLocation().toOSString();
-					args[1] = "--recommendations=yes";
-					results.getErrors().clear();
-					results.getWarnings().clear();
-					results = StaticAnalyzer.runStaticAnalyzer(args, true);
-					updateViewer();
-				}
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						IEditorPart editorPart = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
+						if(editorPart  != null)
+						{
+							IFileEditorInput input = (IFileEditorInput)editorPart.getEditorInput();
+							IFile file = input.getFile();
+							IProject activeProject = file.getProject();
+							String[] args = new String[2];
+							args[0] = "--source="+activeProject.getRawLocation().toOSString();
+							args[1] = "--recommendations=yes";
+							results.getErrors().clear();
+							results.getWarnings().clear();
+							results = StaticAnalyzer.runStaticAnalyzer(args, true);
+							removeExistingMarkers();
+							updateViewer();							
+							results.getErrors().forEach(error -> {
+								LOGGER.info("------------------DEFECT ANALYSIS------------------");
+								LOGGER.info(error.getErrorType() + "  " + error.getDesc() + "  " + error.getFileName() + "  " + Integer.toString(error.getRowNumber()) + "  " + Integer.toString(error.getColumnNumber()));
+								LOGGER.info("------------------DEFECT ANALYSIS------------------");
+							});							
+						}
+					}
+				});
+
 			}
 		});
 		runBtn.setLayoutData(new GridData());
@@ -124,12 +136,7 @@ public class PluginView extends ViewPart {
 				dialog.create();
 				if (dialog.open() == Window.OK) {
 					LOGGER.info("------------------DEFECT REPORT------------------");
-					LOGGER.info(dialog.getUid());
-					LOGGER.info(dialog.getHowWasDefectFound());
-					LOGGER.info(dialog.getHowToReproduceDefect());
-					LOGGER.info(dialog.getLineNumber());
-					LOGGER.info(dialog.getFileName());
-					LOGGER.info(dialog.getDescription());
+					LOGGER.info(dialog.getUid() + "  " + dialog.getHowWasDefectFound() + "  " + dialog.getHowToReproduceDefect() + "  " + dialog.getLineNumber() + "  " + dialog.getFileName() + "  " + dialog.getDescription());
 					LOGGER.info("------------------DEFECT REPORT------------------");
 				} 
 
@@ -167,15 +174,15 @@ public class PluginView extends ViewPart {
 		});
 		recommendationCheck.setLayoutData(new GridData());
 
-//		Button devMode = new Button(parent, SWT.CHECK);
-//		devMode.setText("Enable Dev Mode");
-//		devMode.addSelectionListener(new SelectionAdapter()
-//		{
-//			public void widgetSelected(SelectionEvent e)
-//			{
-//				useDevMode = devMode.getSelection();
-//			}
-//		});
+		//		Button devMode = new Button(parent, SWT.CHECK);
+		//		devMode.setText("Enable Dev Mode");
+		//		devMode.addSelectionListener(new SelectionAdapter()
+		//		{
+		//			public void widgetSelected(SelectionEvent e)
+		//			{
+		//				useDevMode = devMode.getSelection();
+		//			}
+		//		});
 
 		Button showWarnings = new Button(parent, SWT.CHECK);
 		showWarnings.setText("Show Warnings");
@@ -187,31 +194,31 @@ public class PluginView extends ViewPart {
 			}
 		});		
 
-//		if(!workspaceListenerInit) {
-//			ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
-//				@Override
-//				public void resourceChanged(IResourceChangeEvent event) {
-//					workspaceListenerInit = true;					
-//					if(event.getType() == IResourceChangeEvent.POST_CHANGE) {
-//						IEditorPart editorPart = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
-//						if(editorPart != null && useDevMode)
-//						{
-//							IFileEditorInput input = (IFileEditorInput)editorPart.getEditorInput() ;
-//							IFile file = input.getFile();
-//							IProject activeProject = file.getProject();
-//							System.out.println(activeProject.getRawLocation().toOSString());
-//							String[] args = new String[2];
-//							args[0] = "--source="+activeProject.getRawLocation().toOSString();
-//							args[1] = "--recommendations=yes";
-//							results.getErrors().clear();
-//							results.getWarnings().clear();
-//							results = StaticAnalyzer.runStaticAnalyzer(args, true);						
-//							updateViewer();
-//						}
-//					}
-//				}
-//			});
-//		}		
+		//		if(!workspaceListenerInit) {
+		//			ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
+		//				@Override
+		//				public void resourceChanged(IResourceChangeEvent event) {
+		//					workspaceListenerInit = true;					
+		//					if(event.getType() == IResourceChangeEvent.POST_CHANGE) {
+		//						IEditorPart editorPart = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
+		//						if(editorPart != null && useDevMode)
+		//						{
+		//							IFileEditorInput input = (IFileEditorInput)editorPart.getEditorInput() ;
+		//							IFile file = input.getFile();
+		//							IProject activeProject = file.getProject();
+		//							System.out.println(activeProject.getRawLocation().toOSString());
+		//							String[] args = new String[2];
+		//							args[0] = "--source="+activeProject.getRawLocation().toOSString();
+		//							args[1] = "--recommendations=yes";
+		//							results.getErrors().clear();
+		//							results.getWarnings().clear();
+		//							results = StaticAnalyzer.runStaticAnalyzer(args, true);						
+		//							updateViewer();
+		//						}
+		//					}
+		//				}
+		//			});
+		//		}		
 
 		createViewer(parent);
 	}
@@ -328,7 +335,9 @@ public class PluginView extends ViewPart {
 				System.out.println("Filter-mask: " + e.stateMask);
 				System.out.println("Filter-char: " + e.keyCode);
 				System.out.println(e.character);
+				LOGGER.info("------------------KEY LOGGING------------------");
 				LOGGER.info("Keycode : " + e.keyCode + " Character : " + e.character + " StateMask : " + e.stateMask);
+				LOGGER.info("------------------KEY LOGGING------------------");
 			}
 		});
 	}	

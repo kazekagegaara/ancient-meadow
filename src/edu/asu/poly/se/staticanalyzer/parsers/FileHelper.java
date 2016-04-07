@@ -51,13 +51,19 @@ public class FileHelper {
 				if(f.exists() && !f.isDirectory()) {
 					filesToProcess.add(f);
 				} else {
-					Location loc = getLocationInFile(name,srcFile);
-					results.setError(new Error("FileNotFound",filepath,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
+					List<Location> locs = getLocationInFile(name,srcFile);
+					for(int i=0; i<locs.size(); i++) {
+						Location loc = locs.get(i);
+						results.setError(new Error("FileNotFound",filepath,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
+					}
 				}
 			} else if(name.contains("http://") || name.contains("https://")) {
 				if(!checkRemoteFileExistence(name)) {
-					Location loc = getLocationInFile(Pattern.quote(name),srcFile);
-					results.setError(new Error("FileNotFound",name,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
+					List<Location> locs = getLocationInFile(Pattern.quote(name),srcFile);
+					for(int i=0; i<locs.size(); i++) {
+						Location loc = locs.get(i);
+						results.setError(new Error("FileNotFound",name,srcFile,loc.getRowNumber(),loc.getColumnNumber()));
+					}
 				}
 			}
 		});
@@ -65,7 +71,8 @@ public class FileHelper {
 		return filesToProcess;
 	}
 
-	public Location getLocationInFile(String str,String loc) {
+	public List<Location> getLocationInFile(String str,String loc) {
+		List<Location> matchingLocations = new ArrayList<Location>();
 		int rowNumber = -1;
 		int columnNumber = -1;
 		try {
@@ -73,12 +80,14 @@ public class FileHelper {
 			LineNumberReader lnr = new LineNumberReader(fr);
 			String line;
 			int i;
-			while((line=lnr.readLine()) != null) {
+			while((line=lnr.readLine()) != null) {				
 				i = lnr.getLineNumber();
 				if(exactMatch(line,str)) {
 					rowNumber = i;
 					columnNumber = line.indexOf(str) + 1;
-					break;
+					matchingLocations.add(new Location(rowNumber,columnNumber));
+					rowNumber = -1;
+					columnNumber = -1;
 				}
 			}
 			fr.close();
@@ -86,7 +95,7 @@ public class FileHelper {
 		} catch(Exception e) {
 			// this should never happen
 		}
-		return new Location(rowNumber,columnNumber);
+		return matchingLocations;
 	}
 
 	private static boolean exactMatch(String source, String subItem) {

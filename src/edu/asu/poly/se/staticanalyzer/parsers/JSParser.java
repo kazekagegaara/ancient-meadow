@@ -49,8 +49,9 @@ public class JSParser {
 
 		ErrorManager errors = new ErrorManager();
 		Context contextm = new Context(options, errors, Thread.currentThread().getContextClassLoader());
-		Context.setGlobal(contextm.createGlobal());
-		String json = ScriptUtils.parse(code, file.getFile().toString(), true);
+		Context.setGlobal(contextm.createGlobal());		
+		
+		String json = ScriptUtils.parse(code, "<unknown>", true);
 		JsonObject o = new JsonParser().parse(json).getAsJsonObject();
 		for (Map.Entry<String,JsonElement> entry : o.entrySet()) {
 			if(entry.getKey().toString().equals("body")) {
