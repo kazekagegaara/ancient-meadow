@@ -106,7 +106,7 @@ public class PluginView extends ViewPart {
 							IFile file = input.getFile();
 							IProject activeProject = file.getProject();
 							String[] args = new String[2];
-							args[0] = "--source="+activeProject.getRawLocation().toOSString();
+							args[0] = "--source="+activeProject.getLocation().toOSString();
 							args[1] = "--recommendations=yes";
 							results.getErrors().clear();
 							results.getWarnings().clear();
@@ -184,15 +184,15 @@ public class PluginView extends ViewPart {
 		//			}
 		//		});
 
-		Button showWarnings = new Button(parent, SWT.CHECK);
-		showWarnings.setText("Show Warnings");
-		showWarnings.addSelectionListener(new SelectionAdapter()
-		{
-			public void widgetSelected(SelectionEvent e)
-			{
-				showWarning = showWarnings.getSelection();
-			}
-		});		
+//		Button showWarnings = new Button(parent, SWT.CHECK);
+//		showWarnings.setText("Show Warnings");
+//		showWarnings.addSelectionListener(new SelectionAdapter()
+//		{
+//			public void widgetSelected(SelectionEvent e)
+//			{
+//				showWarning = showWarnings.getSelection();
+//			}
+//		});		
 
 		//		if(!workspaceListenerInit) {
 		//			ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
@@ -230,7 +230,7 @@ public class PluginView extends ViewPart {
 			try {
 				IEditorInput input = refs[i].getEditorInput();
 				IFile file = ((IFileEditorInput)input).getFile();
-				String srcFile = file.getRawLocation().toOSString();
+				String srcFile = file.getLocation().toOSString();
 				for(int j=0;j<errorsShown.size();j++) {
 					Error err = errorsShown.get(j);
 					if(srcFile.equals(err.getFileName())) {									
